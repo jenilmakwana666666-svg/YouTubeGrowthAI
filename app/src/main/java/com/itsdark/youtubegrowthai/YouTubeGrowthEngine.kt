@@ -5,17 +5,18 @@ import android.content.Context
 class YouTubeGrowthEngine(
     context: Context
 ) {
+
     private val modelManager = LocalModelManager(context)
 
-    fun generate(topic: String): GrowthResult {
+    suspend fun generate(topic: String): GrowthResult {
+
         require(topic.isNotBlank()) {
             "Topic cannot be empty."
         }
 
         if (!modelManager.modelExists()) {
             throw IllegalStateException(
-                "GGUF model not found. " +
-                    "Configure one local model before generating."
+                "GGUF model not found. Please select a GGUF model first."
             )
         }
 
