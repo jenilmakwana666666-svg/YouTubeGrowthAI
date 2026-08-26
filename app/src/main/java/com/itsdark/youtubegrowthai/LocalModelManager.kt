@@ -34,7 +34,7 @@ class LocalModelManager(
 
     fun modelExists(): Boolean {
         val model = getConfiguredModel()
-        return model.exists() && model.length() > 0
+        return model.isFile && model.length() > 0
     }
 
     fun modelPath(): String {
@@ -43,14 +43,25 @@ class LocalModelManager(
 
     fun getModelSizeBytes(): Long {
         val model = getConfiguredModel()
-        return if (model.exists()) model.length() else 0L
+        return if (modelExists()) model.length() else 0L
     }
 
     fun modelStatus(): String {
         return if (modelExists()) {
-            "GGUF model found: ${getConfiguredModel().name}"
+            "GGUF model ready: ${getConfiguredModel().name}"
         } else {
-            "No GGUF model found. Place one model at: ${modelPath()}"
+            "GGUF model not found."
         }
+    }
+
+    fun generate(
+        prompt: String,
+        maxTokens: Int,
+        temperature: Float
+    ): String {
+        throw UnsupportedOperationException(
+            "Native llama.cpp GGUF inference is not bundled yet. " +
+                "Connect the JNI inference implementation here."
+        )
     }
 }
