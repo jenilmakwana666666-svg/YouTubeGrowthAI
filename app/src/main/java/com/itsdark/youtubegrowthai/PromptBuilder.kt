@@ -9,14 +9,20 @@ object PromptBuilder {
         "Do not claim that something is trending unless current data is available. " +
         "Do not invent analytics."
 
-    fun build(topic: String, language: OutputLanguage): String {
+    fun build(
+        topic: String,
+        language: OutputLanguage
+    ): String {
+
         val languageInstruction = when (language) {
             OutputLanguage.ENGLISH ->
-                "Write the output in natural English."
+                "Generate natural English."
+
             OutputLanguage.HINDI ->
-                "Write the output in natural Hindi using Devanagari script."
+                "Generate natural Hindi in Devanagari."
+
             OutputLanguage.HINGLISH ->
-                "Write the output in natural Hinglish using simple Roman Hindi mixed with English."
+                "Generate natural Hinglish using Roman Hindi mixed with English."
         }
 
         return """
@@ -24,45 +30,44 @@ object PromptBuilder {
 
             $languageInstruction
 
-            User topic:
+            Topic:
             $topic
 
-            Target niche:
+            Niche:
             Anime, Dragon Ball, Goku, Vegeta, Broly, Frieza,
             Naruto, Bleach, anime edits and YouTube Shorts.
 
-            Return the result using exactly these section markers:
+            Generate:
 
             [TITLES]
-            1.
-            2.
-            3.
-            4.
-            5.
-            6.
-            7.
-            8.
-            9.
-            10.
+            Exactly 10 title ideas.
 
             [DESCRIPTION]
+            One SEO-friendly Shorts description.
 
             [HOOK]
+            One strong opening hook.
 
             [HASHTAGS]
+            Relevant hashtags.
 
             [KEYWORDS]
+            Search keywords.
 
             [THUMBNAIL_TEXT]
+            Short thumbnail text ideas.
 
             [CTA]
+            A natural call to action.
 
             [GROWTH_TIPS]
+            Basic practical growth suggestions.
 
             [ALTERNATIVE_TITLES]
+            Alternative title styles.
 
-            Keep the suggestions relevant to the topic.
-            Avoid fake statistics, fake trends and unsupported claims.
+            Never invent analytics.
+            Never claim something is trending without current data.
         """.trimIndent()
     }
 }
