@@ -10,14 +10,18 @@ class LocalModelManager(
 ) {
 
     companion object {
+
         private const val MODEL_DIRECTORY = "models"
+
         private const val DEFAULT_MODEL_NAME = "model.gguf"
     }
 
-    private var loadedModel: Any? = null
-
     fun getModelDirectory(): File {
-        val directory = File(context.filesDir, MODEL_DIRECTORY)
+
+        val directory = File(
+            context.filesDir,
+            MODEL_DIRECTORY
+        )
 
         if (!directory.exists()) {
             directory.mkdirs()
@@ -27,6 +31,7 @@ class LocalModelManager(
     }
 
     fun getConfiguredModel(): File {
+
         return File(
             getModelDirectory(),
             DEFAULT_MODEL_NAME
@@ -34,15 +39,21 @@ class LocalModelManager(
     }
 
     fun modelExists(): Boolean {
+
         val model = getConfiguredModel()
-        return model.isFile && model.length() > 0
+
+        return model.isFile &&
+                model.length() > 0
     }
 
     fun modelPath(): String {
-        return getConfiguredModel().absolutePath
+
+        return getConfiguredModel()
+            .absolutePath
     }
 
     fun getModelSizeBytes(): Long {
+
         return if (modelExists()) {
             getConfiguredModel().length()
         } else {
@@ -51,53 +62,71 @@ class LocalModelManager(
     }
 
     fun modelStatus(): String {
+
         return if (modelExists()) {
-            "GGUF model ready: ${getConfiguredModel().name}"
+
+            "GGUF model ready: " +
+                    getConfiguredModel().name
+
         } else {
+
             "GGUF model not found."
         }
     }
 
     suspend fun generate(
         prompt: String,
-        maxTokens: Int,
-        temperature: Float
+        maxTokens: Int
     ): String {
 
         if (!modelExists()) {
+
             throw IllegalStateException(
-                "GGUF model not found. Select a model first."
+                "GGUF model not found. " +
+                        "Select a GGUF model first."
             )
         }
 
         val model = Llama.loadModel(
+
             modelPath = modelPath(),
+
             config = LlamaConfig(
                 contextSize = 2048,
                 threads = 4
             )
         )
 
-        loadedModel = model
-
         return try {
+
             val result = Llama.complete(
+
                 model,
+
                 prompt = prompt,
+
                 systemPrompt = """
                     You are YouTube Growth AI.
-                    Generate useful YouTube Shorts content.
-                    Answer in natural Hinglish.
-                    Follow the requested output sections exactly.
+
+                    Generate useful YouTube Shorts
+                    content.
+
+                    Use natural Hinglish when requested.
+
+                    Follow the requested sections exactly.
+
+                    Do not invent analytics.
+                    Do not falsely claim something is trending.
                 """.trimIndent(),
-                maxTokens = maxTokens,
-                temperature = temperature
+
+                maxTokens = maxTokens
             )
 
             result.text
+
         } finally {
+
             Llama.releaseModel(model)
-            loadedModel = null
         }
     }
 }
