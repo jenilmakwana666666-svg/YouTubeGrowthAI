@@ -1,6 +1,8 @@
 package com.itsdark.youtubegrowthai
 
 import android.content.Context
+import dev.ffmpegkit.llama.Llama
+import dev.ffmpegkit.llama.LlamaConfig
 import java.io.File
 
 class LocalModelManager(
@@ -12,11 +14,10 @@ class LocalModelManager(
         private const val DEFAULT_MODEL_NAME = "model.gguf"
     }
 
+    private var loadedModel: Any? = null
+
     fun getModelDirectory(): File {
-        val directory = File(
-            context.filesDir,
-            MODEL_DIRECTORY
-        )
+        val directory = File(context.filesDir, MODEL_DIRECTORY)
 
         if (!directory.exists()) {
             directory.mkdirs()
@@ -42,8 +43,11 @@ class LocalModelManager(
     }
 
     fun getModelSizeBytes(): Long {
-        val model = getConfiguredModel()
-        return if (modelExists()) model.length() else 0L
+        return if (modelExists()) {
+            getConfiguredModel().length()
+        } else {
+            0L
+        }
     }
 
     fun modelStatus(): String {
@@ -54,14 +58,46 @@ class LocalModelManager(
         }
     }
 
-    fun generate(
+    suspend fun generate(
         prompt: String,
         maxTokens: Int,
         temperature: Float
     ): String {
-        throw UnsupportedOperationException(
-            "Native llama.cpp GGUF inference is not bundled yet. " +
-                "Connect the JNI inference implementation here."
+
+        if (!modelExists()) {
+            throw IllegalStateException(
+                "GGUF model not found. Select a model first."
+            )
+        }
+
+        val model = Llama.loadModel(
+            modelPath = modelPath(),
+            config = LlamaConfig(
+                contextSize = 2048,
+                threads = 4
+            )
         )
+
+        loadedModel = model
+
+        return try {
+            val result = Llama.complete(
+                model,
+                prompt = prompt,
+                systemPrompt = """
+                    You are YouTube Growth AI.
+                    Generate useful YouTube Shorts content.
+                    Answer in natural Hinglish.
+                    Follow the requested output sections exactly.
+                """.trimIndent(),
+                maxTokens = maxTokens,
+                temperature = temperature
+            )
+
+            result.text
+        } finally {
+            Llama.releaseModel(model)
+            loadedModel = null
+        }
     }
 }
