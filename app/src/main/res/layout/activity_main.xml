@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
@@ -52,6 +54,15 @@
                 android:text="@string/clear" />
 
         </LinearLayout>
+
+        <!-- GGUF MODEL BUTTON -->
+
+        <Button
+            android:id="@+id/modelButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:text="SELECT GGUF MODEL" />
 
         <Button
             android:id="@+id/copyAllButton"
