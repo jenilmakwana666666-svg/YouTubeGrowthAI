@@ -6,17 +6,22 @@ class YouTubeGrowthEngine(
     context: Context
 ) {
 
-    private val modelManager = LocalModelManager(context)
+    private val modelManager =
+        LocalModelManager(context)
 
-    suspend fun generate(topic: String): GrowthResult {
+    suspend fun generate(
+        topic: String
+    ): GrowthResult {
 
         require(topic.isNotBlank()) {
             "Topic cannot be empty."
         }
 
         if (!modelManager.modelExists()) {
+
             throw IllegalStateException(
-                "GGUF model not found. Please select a GGUF model first."
+                "GGUF model not found. " +
+                        "Please select a GGUF model first."
             )
         }
 
@@ -25,12 +30,14 @@ class YouTubeGrowthEngine(
             OutputLanguage.HINGLISH
         )
 
-        val rawOutput = modelManager.generate(
-            prompt = prompt,
-            maxTokens = 512,
-            temperature = 0.7f
-        )
+        val rawOutput =
+            modelManager.generate(
+                prompt = prompt,
+                maxTokens = 512
+            )
 
-        return ResultParser.parse(rawOutput)
+        return ResultParser.parse(
+            rawOutput
+        )
     }
 }
