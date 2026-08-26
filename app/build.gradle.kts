@@ -9,10 +9,14 @@ android {
 
     defaultConfig {
         applicationId = "com.itsdark.youtubegrowthai"
-        minSdk = 23
+        minSdk = 24
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.1"
+
+        ndk {
+            abiFilters += "arm64-v8a"
+        }
     }
 
     buildTypes {
@@ -29,4 +33,8 @@ android {
     kotlinOptions {
         jvmTarget = "17"
     }
+}
+
+dependencies {
+    implementation("dev.ffmpegkit-maintained:llama-android:0.1.1")
 }
