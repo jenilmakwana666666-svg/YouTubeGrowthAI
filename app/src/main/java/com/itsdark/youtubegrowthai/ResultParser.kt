@@ -15,39 +15,93 @@ data class GrowthResult(
 object ResultParser {
 
     fun parse(text: String): GrowthResult {
+
+        val clean = text.trim()
+
         return GrowthResult(
-            titles = section(text, "TITLES"),
-            description = section(text, "DESCRIPTION"),
-            hook = section(text, "HOOK"),
-            hashtags = section(text, "HASHTAGS"),
-            keywords = section(text, "KEYWORDS"),
-            thumbnailText = section(text, "THUMBNAIL_TEXT"),
-            cta = section(text, "CTA"),
-            growthTips = section(text, "GROWTH_TIPS"),
-            alternativeTitles = section(text, "ALTERNATIVE_TITLES")
+            titles = section(clean, "TITLES"),
+            description = section(clean, "DESCRIPTION"),
+            hook = section(clean, "HOOK"),
+            hashtags = section(clean, "HASHTAGS"),
+            keywords = section(clean, "KEYWORDS"),
+            thumbnailText = section(clean, "THUMBNAIL_TEXT"),
+            cta = section(clean, "CTA"),
+            growthTips = section(clean, "GROWTH_TIPS"),
+            alternativeTitles = section(clean, "ALTERNATIVE_TITLES")
         )
     }
 
-    private fun section(text: String, name: String): String {
-        val startMarker = "[$name]"
-        val start = text.indexOf(startMarker, ignoreCase = true)
+    private fun section(
+        text: String,
+        name: String
+    ): String {
+
+        val patterns = listOf(
+            "[$name]",
+            name,
+            "$name:",
+            "**$name**",
+            "## $name"
+        )
+
+        var start = -1
+        var markerLength = 0
+
+        for (pattern in patterns) {
+
+            val index =
+                text.indexOf(
+                    pattern,
+                    ignoreCase = true
+                )
+
+            if (index >= 0) {
+                start = index
+                markerLength = pattern.length
+                break
+            }
+        }
 
         if (start == -1) {
             return ""
         }
 
-        val contentStart = start + startMarker.length
+        val contentStart =
+            start + markerLength
 
-        val nextStart = text.indexOf(
-            "[",
-            startIndex = contentStart
+        val nextMarkers = listOf(
+            "[TITLES]",
+            "[DESCRIPTION]",
+            "[HOOK]",
+            "[HASHTAGS]",
+            "[KEYWORDS]",
+            "[THUMBNAIL_TEXT]",
+            "[CTA]",
+            "[GROWTH_TIPS]",
+            "[ALTERNATIVE_TITLES]"
         )
 
-        val contentEnd =
-            if (nextStart == -1) text.length else nextStart
+        var contentEnd = text.length
+
+        for (marker in nextMarkers) {
+
+            val index =
+                text.indexOf(
+                    marker,
+                    startIndex = contentStart,
+                    ignoreCase = true
+                )
+
+            if (index >= 0 && index < contentEnd) {
+                contentEnd = index
+            }
+        }
 
         return text
-            .substring(contentStart, contentEnd)
+            .substring(
+                contentStart,
+                contentEnd
+            )
             .trim()
     }
 }
