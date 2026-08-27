@@ -11,7 +11,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="20dp">
+        android:paddingStart="18dp"
+        android:paddingEnd="18dp"
+        android:paddingTop="20dp"
+        android:paddingBottom="24dp">
 
         <!-- HEADER -->
 
@@ -23,17 +26,17 @@
             android:textSize="28sp"
             android:textStyle="bold"
             android:gravity="center"
-            android:layout_marginTop="8dp" />
+            android:letterSpacing="0.01" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Create better Shorts content in seconds"
+            android:text="Create powerful Shorts content in seconds"
             android:textColor="@color/text_secondary"
             android:textSize="14sp"
             android:gravity="center"
             android:layout_marginTop="6dp"
-            android:layout_marginBottom="24dp" />
+            android:layout_marginBottom="22dp" />
 
         <!-- TOPIC CARD -->
 
@@ -56,7 +59,7 @@
             <EditText
                 android:id="@+id/topicInput"
                 android:layout_width="match_parent"
-                android:layout_height="55dp"
+                android:layout_height="54dp"
                 android:layout_marginTop="10dp"
                 android:hint="@string/topic_hint"
                 android:textColor="@color/text_primary"
@@ -70,7 +73,7 @@
 
         </LinearLayout>
 
-        <!-- GENERATE BUTTON -->
+        <!-- GENERATE -->
 
         <Button
             android:id="@+id/generateButton"
@@ -81,10 +84,12 @@
             android:textSize="15sp"
             android:textStyle="bold"
             android:textAllCaps="false"
+            android:textColor="@android:color/white"
             android:background="@drawable/generate_button"
-            android:textColor="@android:color/white" />
+            android:minHeight="0dp"
+            android:padding="0dp" />
 
-        <!-- SECONDARY BUTTONS -->
+        <!-- CLEAR / COPY -->
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -100,7 +105,8 @@
                 android:text="Clear"
                 android:textAllCaps="false"
                 android:textColor="@color/text_primary"
-                android:background="@drawable/secondary_button" />
+                android:background="@drawable/secondary_button"
+                android:minHeight="0dp" />
 
             <Space
                 android:layout_width="10dp"
@@ -114,7 +120,8 @@
                 android:text="Copy All"
                 android:textAllCaps="false"
                 android:textColor="@color/text_primary"
-                android:background="@drawable/secondary_button" />
+                android:background="@drawable/secondary_button"
+                android:minHeight="0dp" />
 
         </LinearLayout>
 
@@ -130,8 +137,8 @@
 
             <ProgressBar
                 android:id="@+id/progressBar"
-                android:layout_width="22dp"
-                android:layout_height="22dp"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
                 android:visibility="gone" />
 
             <TextView
@@ -146,7 +153,7 @@
 
         </LinearLayout>
 
-        <!-- RESULTS TITLE -->
+        <!-- RESULTS HEADER -->
 
         <TextView
             android:layout_width="match_parent"
@@ -156,7 +163,7 @@
             android:textSize="17sp"
             android:textStyle="bold"
             android:layout_marginTop="8dp"
-            android:layout_marginBottom="4dp" />
+            android:layout_marginBottom="8dp" />
 
         <!-- RESULTS -->
 
@@ -176,7 +183,7 @@
             android:textSize="11sp"
             android:gravity="center"
             android:paddingTop="24dp"
-            android:paddingBottom="12dp" />
+            android:paddingBottom="8dp" />
 
     </LinearLayout>
 
