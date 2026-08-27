@@ -15,78 +15,59 @@ class YouTubeGrowthEngine {
 
         val subject = makeSubject(clean)
 
-        val titles = makeTitles(
-            subject,
-            lower
-        )
-
-        val description = makeDescription(
-            subject,
-            lower
-        )
-
-        val hook = makeHook(
-            subject,
-            lower
-        )
-
-        val hashtags = makeHashtags(
-            subject,
-            lower
-        )
-
-        val keywords = makeKeywords(
-            subject,
-            lower
-        )
-
         return GrowthResult(
-            titles = titles,
-            description = description,
-            hook = hook,
-            hashtags = hashtags,
-            keywords = keywords,
+            titles = makeTitles(subject, lower),
+            description = makeDescription(subject, lower),
+            hook = makeHook(subject, lower),
+            hashtags = makeHashtags(subject, lower),
+            keywords = makeKeywords(subject, lower),
 
-            thumbnailText = """
-1. AURA UNLEASHED 🔥
-2. TOO POWERFUL ⚡
-3. THAT AURA! 👀
-""".trimIndent(),
+            thumbnailText = makeThumbnailText(subject, lower),
 
             cta = """
-Which moment was the best? 👀
-Like 👍 Comment 💬 and Subscribe 🔔
+Which moment was your favorite? 👀
+Comment below and subscribe for more Shorts! 🔔
 """.trimIndent(),
 
             growthTips = """
-1. Put the most powerful scene in the first 1–2 seconds.
-2. Keep the title short and curiosity-driven.
-3. Use only relevant hashtags.
-4. End with a question to encourage comments.
-5. Make the thumbnail text very short.
+1. Start with the strongest moment immediately.
+2. Keep the first few seconds highly engaging.
+3. Use a clear and curiosity-driven title.
+4. Keep hashtags relevant to the actual video.
+5. Give viewers a reason to comment.
 """.trimIndent(),
 
-            alternativeTitles = makeAlternativeTitles(
-                subject,
-                lower
-            )
+            alternativeTitles = makeAlternativeTitles(subject, lower)
         )
     }
 
-    // -------------------------
-    // CLEAN TOPIC
-    // -------------------------
+    // =========================================================
+    // TOPIC CLEANING
+    // =========================================================
 
     private fun cleanTopic(input: String): String {
 
         var text = input.trim()
 
-        text = text
-            .replace(Regex("\\s+"), " ")
-            .replace(" s ", "'s ")
-            .replace(" vs ", " vs ")
-            .replace("VS", "vs")
-            .replace(" Vs ", " vs ")
+        text = text.replace(
+            Regex("\\s+"),
+            " "
+        )
+
+        text = text.replace(
+            Regex("(?i)\\s+s\\s+"),
+            "'s "
+        )
+
+        text = text.replace(
+            Regex("(?i)\\s+vs\\s+"),
+            " vs "
+        )
+
+        text = text.replace(
+            Regex("(?i)\\s+versus\\s+"),
+            " vs "
+        )
 
         return text
     }
@@ -112,192 +93,193 @@ Like 👍 Comment 💬 and Subscribe 🔔
             }
     }
 
-    // -------------------------
+    // =========================================================
     // TITLES
-    // -------------------------
+    // =========================================================
 
     private fun makeTitles(
         subject: String,
         lower: String
     ): String {
 
-        val list = mutableListOf<String>()
+        val titles = mutableListOf<String>()
 
-        if (lower.contains("aura")) {
+        when {
 
-            list.add(
-                "$subject Is On Another Level 🔥"
-            )
+            lower.contains("aura") -> {
 
-            list.add(
-                "That $subject Aura Is INSANE! ⚡"
-            )
+                titles.add(
+                    "$subject Is On Another Level 🔥"
+                )
 
-            list.add(
-                "When $subject Unleashes His Aura 👀🔥"
-            )
+                titles.add(
+                    "That Aura Is Absolutely INSANE ⚡"
+                )
 
-            list.add(
-                "The Aura Difference Is CRAZY 💀"
-            )
+                titles.add(
+                    "When The Aura Takes Over 👀🔥"
+                )
 
-            list.add(
-                "$subject — Pure Aura Energy 🔥"
-            )
+                titles.add(
+                    "This Aura Moment Hits Different 💀"
+                )
 
-            list.add(
-                "Nobody Has Aura Like This ⚡"
-            )
+                titles.add(
+                    "The Power Behind This Aura Is CRAZY ⚡"
+                )
 
-            list.add(
-                "This $subject Moment Goes HARD 🔥"
-            )
+                titles.add(
+                    "$subject — Pure Aura Energy 🔥"
+                )
 
-            list.add(
-                "The Most INSANE $subject Aura 👀"
-            )
+                titles.add(
+                    "Nobody Expected This Aura 👀"
+                )
 
-            list.add(
-                "$subject's Aura Says It All 💀🔥"
-            )
+                titles.add(
+                    "This Moment Has TOO Much Aura 💀🔥"
+                )
 
-            list.add(
-                "You Can't Ignore This Aura ⚡"
-            )
+                titles.add(
+                    "The Aura Says Everything ⚡"
+                )
 
-        } else if (
-            lower.contains("vs") ||
-            lower.contains("versus")
-        ) {
+                titles.add(
+                    "You Can't Ignore This Aura 👀🔥"
+                )
+            }
 
-            list.add(
-                "$subject — Who Wins? 👀🔥"
-            )
+            lower.contains(" vs ") -> {
 
-            list.add(
-                "$subject's Ultimate Battle ⚡"
-            )
+                titles.add(
+                    "$subject — Who Wins? 👀🔥"
+                )
 
-            list.add(
-                "The $subject Showdown 🔥"
-            )
+                titles.add(
+                    "$subject: The Ultimate Showdown ⚡"
+                )
 
-            list.add(
-                "$subject — This Fight Is INSANE 💀"
-            )
+                titles.add(
+                    "Nobody Expected This $subject Battle 🔥"
+                )
 
-            list.add(
-                "Nobody Expected This $subject Battle 👀"
-            )
+                titles.add(
+                    "$subject Battle Goes CRAZY 💀"
+                )
 
-            list.add(
-                "$subject: The Final Showdown ⚡"
-            )
+                titles.add(
+                    "Who Would Win In $subject? 👀"
+                )
 
-            list.add(
-                "Who Would Win In $subject? 🔥"
-            )
+                titles.add(
+                    "The Most Epic $subject Fight 🔥"
+                )
 
-            list.add(
-                "$subject Battle Goes CRAZY 💥"
-            )
+                titles.add(
+                    "$subject — This Fight Is INSANE ⚡"
+                )
 
-            list.add(
-                "The Most Epic $subject Fight 🔥"
-            )
+                titles.add(
+                    "The Final $subject Showdown 💥"
+                )
 
-            list.add(
-                "$subject — Wait For The Ending! 👀"
-            )
+                titles.add(
+                    "$subject — Wait For The Ending! 👀"
+                )
 
-        } else if (
-            lower.contains("edit")
-        ) {
+                titles.add(
+                    "This $subject Battle Hits Different 🔥"
+                )
+            }
 
-            list.add(
-                "$subject Edit That Goes HARD 🔥"
-            )
+            lower.contains("edit") -> {
 
-            list.add(
-                "This $subject Edit Is INSANE ⚡"
-            )
+                titles.add(
+                    "$subject Edit That Goes HARD 🔥"
+                )
 
-            list.add(
-                "$subject Edit — Pure Perfection 👀"
-            )
+                titles.add(
+                    "This $subject Edit Is INSANE ⚡"
+                )
 
-            list.add(
-                "The $subject Edit You Need To See 🔥"
-            )
+                titles.add(
+                    "$subject Edit Hits Different 👀"
+                )
 
-            list.add(
-                "This Edit Changed Everything 💀"
-            )
+                titles.add(
+                    "The $subject Edit You Need To See 🔥"
+                )
 
-            list.add(
-                "$subject Edit Hits Different ⚡"
-            )
+                titles.add(
+                    "This $subject Edit Is Too Good 💀"
+                )
 
-            list.add(
-                "One Of The Best $subject Edits 🔥"
-            )
+                titles.add(
+                    "$subject Edit — Pure Perfection ⚡"
+                )
 
-            list.add(
-                "$subject Edit — No Words Needed 👀"
-            )
+                titles.add(
+                    "One Of The Best $subject Edits 🔥"
+                )
 
-            list.add(
-                "This $subject Edit Is Too Good 💥"
-            )
+                titles.add(
+                    "$subject Edit You Can't Skip 👀"
+                )
 
-            list.add(
-                "$subject Edit You Can't Skip 🔥"
-            )
+                titles.add(
+                    "This Edit Goes HARD 💥"
+                )
 
-        } else {
+                titles.add(
+                    "$subject — The Edit Everyone Needs To See 🔥"
+                )
+            }
 
-            list.add(
-                "$subject — You Need To See This 🔥"
-            )
+            else -> {
 
-            list.add(
-                "The Most INSANE $subject Moment 👀"
-            )
+                titles.add(
+                    "$subject — You Need To See This 🔥"
+                )
 
-            list.add(
-                "$subject Hits Different ⚡"
-            )
+                titles.add(
+                    "The Most INSANE $subject Moment 👀"
+                )
 
-            list.add(
-                "Nobody Expected This From $subject 🔥"
-            )
+                titles.add(
+                    "$subject Hits Different ⚡"
+                )
 
-            list.add(
-                "$subject — This Was CRAZY 💀"
-            )
+                titles.add(
+                    "Nobody Expected This From $subject 🔥"
+                )
 
-            list.add(
-                "This $subject Moment Is Unforgettable 👀"
-            )
+                titles.add(
+                    "$subject — This Was CRAZY 💀"
+                )
 
-            list.add(
-                "The $subject Moment Everyone Talks About 🔥"
-            )
+                titles.add(
+                    "This $subject Moment Is Unforgettable 👀"
+                )
 
-            list.add(
-                "$subject — Wait Until The End ⚡"
-            )
+                titles.add(
+                    "$subject — Wait Until The End ⚡"
+                )
 
-            list.add(
-                "You Won't Believe This $subject Moment 💥"
-            )
+                titles.add(
+                    "You Won't Believe This $subject Moment 💥"
+                )
 
-            list.add(
-                "$subject Was Built Different 🔥"
-            )
+                titles.add(
+                    "$subject Was Built Different 🔥"
+                )
+
+                titles.add(
+                    "This $subject Moment Goes HARD 🔥"
+                )
+            }
         }
 
-        return list
+        return titles
             .distinct()
             .mapIndexed { index, title ->
                 "${index + 1}. $title"
@@ -305,72 +287,124 @@ Like 👍 Comment 💬 and Subscribe 🔔
             .joinToString("\n")
     }
 
-    // -------------------------
+    // =========================================================
     // DESCRIPTION
-    // -------------------------
+    // =========================================================
 
     private fun makeDescription(
         subject: String,
         lower: String
     ): String {
 
-        return if (lower.contains("aura")) {
+        return when {
 
-            """
+            lower.contains("goku") ||
+            lower.contains("vegeta") ||
+            lower.contains("zamasu") ||
+            lower.contains("dragon ball") ||
+            lower.contains("anime") -> {
+
+                """
 🔥 $subject
 
-Some moments don't need an explanation — the aura says everything. ⚡
+An epic anime moment you won't want to miss! ⚡
+Watch till the end for the best part. 👀
 
-Watch till the end and experience the full moment. 👀
+What do you think about this moment?
+Drop your opinion in the comments! 👇
 
-If you enjoyed it:
-👍 Like
+👍 Like if you enjoyed the edit
 💬 Comment your favorite moment
-🔔 Subscribe for more edits
+🔔 Subscribe for more anime Shorts
 
-#Shorts #Anime #Edit #Viral
+#itsdark #itsdark444 #Shorts #Anime #DragonBall #DragonBallSuper #AnimeEdit
 """.trimIndent()
+            }
 
-        } else if (
-            lower.contains("vs") ||
-            lower.contains("versus")
-        ) {
+            lower.contains(" vs ") ||
+            lower.contains("battle") ||
+            lower.contains("fight") -> {
 
-            """
+                """
 🔥 $subject
 
-Two sides. One epic battle. ⚡
-Who do you think takes the win?
+The ultimate showdown is here! ⚡
+Watch till the end and decide who had the better moment. 👀
 
-Watch till the end and decide for yourself. 👀
+Who wins? Tell us in the comments! 👇
 
 👍 Like
 💬 Comment your winner
-🔔 Subscribe for more edits
+🔔 Subscribe for more epic Shorts
 
-#Shorts #Anime #Battle #Edit
+#itsdark #itsdark444 #Shorts #Battle #Edit #YouTubeShorts
 """.trimIndent()
+            }
 
-        } else {
+            lower.contains("edit") -> {
 
-            """
+                """
 🔥 $subject
 
-A moment worth watching till the end. 👀
+A clean edit featuring the best moments. ⚡
+Watch till the end and let us know what you think! 👀
 
-If you enjoyed this:
+Which part was your favorite? 👇
+
 👍 Like
-💬 Comment your thoughts
-🔔 Subscribe for more content
+💬 Comment
+🔔 Subscribe for more edits and Shorts
 
-#Shorts #Edit #Viral #Trending
+#itsdark #itsdark444 #Shorts #Edit #AMV #YouTubeShorts
 """.trimIndent()
+            }
+
+            lower.contains("minecraft") ||
+            lower.contains("gaming") ||
+            lower.contains("game") ||
+            lower.contains("free fire") ||
+            lower.contains("bgmi") ||
+            lower.contains("pubg") -> {
+
+                """
+🎮 $subject
+
+Watch till the end — the best moment is coming! 🔥
+
+Did you expect that to happen? 👀
+Tell us what you think in the comments! 👇
+
+👍 Like
+💬 Comment
+🔔 Subscribe for more gaming Shorts
+
+#itsdark #itsdark444 #Shorts #Gaming #Gameplay #YouTubeShorts
+""".trimIndent()
+            }
+
+            else -> {
+
+                """
+🔥 $subject
+
+Watch till the end for the best moment! 👀
+
+What do you think about this?
+Let us know in the comments! 👇
+
+👍 Like
+💬 Comment
+🔔 Subscribe for more Shorts
+
+#itsdark #itsdark444 #Shorts #YouTubeShorts #Trending
+""".trimIndent()
+            }
         }
     }
 
-    // -------------------------
+    // =========================================================
     // HOOK
-    // -------------------------
+    // =========================================================
 
     private fun makeHook(
         subject: String,
@@ -382,28 +416,33 @@ If you enjoyed this:
             lower.contains("aura") ->
                 "You think you've seen aura? Wait until this moment. 👀🔥"
 
-            lower.contains("vs") ||
-            lower.contains("versus") ->
+            lower.contains(" vs ") ||
+            lower.contains("battle") ||
+            lower.contains("fight") ->
                 "Only one can win... but who? 👀⚡"
 
             lower.contains("edit") ->
-                "This edit gets better every second. 🔥"
+                "This edit gets better every second. Don't skip! 🔥"
 
             else ->
                 "Wait until you see what happens next... 👀🔥"
         }
     }
 
-    // -------------------------
+    // =========================================================
     // HASHTAGS
-    // -------------------------
+    // =========================================================
 
     private fun makeHashtags(
         subject: String,
         lower: String
     ): String {
 
-        val result = mutableListOf<String>()
+        val hashtags = mutableListOf<String>()
+
+        // YOUR FIXED BRAND HASHTAGS
+        hashtags.add("#itsdark")
+        hashtags.add("#itsdark444")
 
         val words = subject
             .split(" ")
@@ -417,100 +456,184 @@ If you enjoyed this:
                 it.length >= 3
             }
 
-        words.take(4).forEach {
-            result.add("#$it")
-        }
+        words
+            .take(3)
+            .forEach {
+                hashtags.add("#$it")
+            }
 
-        if (
+        when {
+
             lower.contains("goku") ||
             lower.contains("vegeta") ||
             lower.contains("zamasu") ||
-            lower.contains("anime")
-        ) {
-            result.add("#Anime")
-            result.add("#DragonBall")
-            result.add("#DragonBallSuper")
+            lower.contains("dragon ball") -> {
+
+                hashtags.add("#DragonBall")
+                hashtags.add("#DragonBallSuper")
+                hashtags.add("#Anime")
+            }
+
+            lower.contains("anime") -> {
+
+                hashtags.add("#Anime")
+                hashtags.add("#AnimeEdit")
+            }
+
+            lower.contains("gaming") ||
+            lower.contains("minecraft") ||
+            lower.contains("free fire") ||
+            lower.contains("bgmi") ||
+            lower.contains("pubg") -> {
+
+                hashtags.add("#Gaming")
+                hashtags.add("#Gameplay")
+            }
+
+            lower.contains("edit") -> {
+
+                hashtags.add("#Edit")
+                hashtags.add("#AnimeEdit")
+            }
         }
 
-        result.add("#Shorts")
-        result.add("#YouTubeShorts")
-        result.add("#Edit")
-        result.add("#Viral")
+        hashtags.add("#Shorts")
+        hashtags.add("#YouTubeShorts")
 
-        return result
+        return hashtags
             .distinct()
-            .take(10)
+            .take(12)
             .joinToString(" ")
     }
 
-    // -------------------------
+    // =========================================================
     // KEYWORDS
-    // -------------------------
+    // =========================================================
 
     private fun makeKeywords(
         subject: String,
         lower: String
     ): String {
 
-        val list = mutableListOf<String>()
+        val keywords = mutableListOf<String>()
 
-        list.add(subject)
-        list.add("$subject edit")
-        list.add("$subject shorts")
-        list.add("$subject video")
-        list.add("viral $subject")
-        list.add("$subject edit shorts")
-        list.add("YouTube Shorts")
+        keywords.add(subject)
+        keywords.add("$subject edit")
+        keywords.add("$subject shorts")
+        keywords.add("$subject video")
+        keywords.add("$subject edit shorts")
+        keywords.add("YouTube Shorts")
 
         if (
             lower.contains("goku") ||
             lower.contains("vegeta") ||
             lower.contains("zamasu")
         ) {
-            list.add("Dragon Ball")
-            list.add("Dragon Ball Super")
-            list.add("anime edit")
+            keywords.add("Dragon Ball")
+            keywords.add("Dragon Ball Super")
+            keywords.add("anime edit")
+            keywords.add("anime shorts")
         }
 
-        return list
+        if (
+            lower.contains("gaming") ||
+            lower.contains("minecraft") ||
+            lower.contains("free fire") ||
+            lower.contains("bgmi") ||
+            lower.contains("pubg")
+        ) {
+            keywords.add("gaming shorts")
+            keywords.add("viral gaming")
+            keywords.add("gameplay")
+        }
+
+        return keywords
             .distinct()
             .joinToString(", ")
     }
 
-    // -------------------------
+    // =========================================================
+    // THUMBNAIL TEXT
+    // =========================================================
+
+    private fun makeThumbnailText(
+        subject: String,
+        lower: String
+    ): String {
+
+        return when {
+
+            lower.contains("aura") -> """
+AURA UNLEASHED 🔥
+TOO POWERFUL ⚡
+THAT AURA! 👀
+""".trimIndent()
+
+            lower.contains(" vs ") -> """
+WHO WINS? 👀
+ULTIMATE BATTLE 🔥
+INSANE FIGHT ⚡
+""".trimIndent()
+
+            lower.contains("gaming") ||
+            lower.contains("minecraft") ||
+            lower.contains("free fire") ||
+            lower.contains("bgmi") ||
+            lower.contains("pubg") -> """
+WHAT JUST HAPPENED? 👀
+INSANE PLAY 🔥
+WAIT FOR IT! ⚡
+""".trimIndent()
+
+            else -> """
+INSANE MOMENT 🔥
+WAIT FOR IT! 👀
+THIS IS CRAZY ⚡
+""".trimIndent()
+        }
+    }
+
+    // =========================================================
     // ALTERNATIVE TITLES
-    // -------------------------
+    // =========================================================
 
     private fun makeAlternativeTitles(
         subject: String,
         lower: String
     ): String {
 
-        return if (lower.contains("aura")) {
+        return when {
 
-            """
+            lower.contains("aura") -> """
+
 1. The Aura Is Absolutely INSANE 🔥
 2. This Aura Moment Hits Different ⚡
 3. When The Aura Takes Over 👀
+
 """.trimIndent()
 
-        } else if (
-            lower.contains("vs") ||
-            lower.contains("versus")
-        ) {
+            lower.contains(" vs ") -> """
 
-            """
 1. The Battle Everyone Wanted 🔥
 2. Who Is Really Stronger? 👀
 3. This Fight Goes CRAZY ⚡
+
 """.trimIndent()
 
-        } else {
+            lower.contains("edit") -> """
 
-            """
+1. This Edit Is INSANE 🔥
+2. The Edit Hits Different ⚡
+3. You Can't Skip This Edit 👀
+
+""".trimIndent()
+
+            else -> """
+
 1. This Moment Is INSANE 🔥
 2. You Need To See This 👀
 3. This Goes HARD ⚡
+
 """.trimIndent()
         }
     }
