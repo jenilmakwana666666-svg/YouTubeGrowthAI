@@ -1,13 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <resources>
 
-    <style name="Theme.YouTubeGrowthAI" parent="android:style/Theme.Material.Light.NoActionBar">
+    <style
+        name="Theme.YouTubeGrowthAI"
+        parent="android:style/Theme.Material.NoActionBar">
+
+        <!-- Font -->
         <item name="android:fontFamily">sans</item>
-        <item name="android:colorAccent">@color/primary</item>
-        <item name="android:navigationBarColor">@color/background</item>
+
+        <!-- App colors -->
+        <item name="android:colorAccent">@color/accent</item>
+
+        <!-- Background -->
+        <item name="android:windowBackground">@color/background</item>
+
+        <!-- Status bar -->
         <item name="android:statusBarColor">@color/background</item>
-        <item name="android:windowLightStatusBar">true</item>
+
+        <!-- Navigation bar -->
+        <item name="android:navigationBarColor">@color/background</item>
+
+        <!-- White status-bar icons -->
+        <item name="android:windowLightStatusBar">false</item>
+
+        <!-- White navigation-bar icons -->
+        <item name="android:windowLightNavigationBar">false</item>
+
+        <!-- Prevent action bar -->
         <item name="android:windowActionModeOverlay">true</item>
+
     </style>
 
 </resources>
