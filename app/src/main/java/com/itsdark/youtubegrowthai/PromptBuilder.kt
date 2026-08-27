@@ -2,72 +2,55 @@ package com.itsdark.youtubegrowthai
 
 object PromptBuilder {
 
-    private const val SYSTEM_PROMPT =
-        "You are YouTube Growth AI, a specialized assistant for YouTube Shorts content creation. " +
-        "Generate useful, original and natural titles, descriptions, hooks, hashtags, keywords, " +
-        "thumbnail text, CTAs and growth suggestions based on the user's topic. " +
-        "Do not claim that something is trending unless current data is available. " +
-        "Do not invent analytics."
-
     fun build(
         topic: String,
         language: OutputLanguage
     ): String {
 
-        val languageInstruction = when (language) {
-            OutputLanguage.ENGLISH ->
-                "Generate natural English."
-
-            OutputLanguage.HINDI ->
-                "Generate natural Hindi in Devanagari."
-
-            OutputLanguage.HINGLISH ->
-                "Generate natural Hinglish using Roman Hindi mixed with English."
-        }
-
         return """
-            $SYSTEM_PROMPT
+You are YouTube Growth AI.
 
-            $languageInstruction
+Topic: $topic
 
-            Topic:
-            $topic
+Write the answer in simple Hinglish.
 
-            Niche:
-            Anime, Dragon Ball, Goku, Vegeta, Broly, Frieza,
-            Naruto, Bleach, anime edits and YouTube Shorts.
+IMPORTANT:
+You MUST write every section below.
+Do not skip any section.
+Do not write anything before [TITLES].
 
-            Generate:
+[TITLES]
+1. Title
+2. Title
+3. Title
+4. Title
+5. Title
 
-            [TITLES]
-            Exactly 10 title ideas.
+[DESCRIPTION]
+Write one YouTube Shorts description.
 
-            [DESCRIPTION]
-            One SEO-friendly Shorts description.
+[HOOK]
+Write one strong hook.
 
-            [HOOK]
-            One strong opening hook.
+[HASHTAGS]
+Write 10 relevant hashtags.
 
-            [HASHTAGS]
-            Relevant hashtags.
+[KEYWORDS]
+Write relevant search keywords.
 
-            [KEYWORDS]
-            Search keywords.
+[THUMBNAIL_TEXT]
+Write 3 short thumbnail text ideas.
 
-            [THUMBNAIL_TEXT]
-            Short thumbnail text ideas.
+[CTA]
+Write one call to action.
 
-            [CTA]
-            A natural call to action.
+[GROWTH_TIPS]
+Give 3 simple growth tips.
 
-            [GROWTH_TIPS]
-            Basic practical growth suggestions.
+[ALTERNATIVE_TITLES]
+Write 3 alternative titles.
 
-            [ALTERNATIVE_TITLES]
-            Alternative title styles.
-
-            Never invent analytics.
-            Never claim something is trending without current data.
+Now generate the complete answer.
         """.trimIndent()
     }
 }
