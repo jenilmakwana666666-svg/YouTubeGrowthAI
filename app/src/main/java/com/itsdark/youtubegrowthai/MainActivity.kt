@@ -1,7 +1,8 @@
 package com.itsdark.youtubegrowthai
 
 import android.app.Activity
-import android.content.Intent
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
@@ -19,242 +20,67 @@ import kotlinx.coroutines.withContext
 class MainActivity : Activity() {
 
     private lateinit var topicInput: EditText
-
     private lateinit var generateButton: Button
-
     private lateinit var clearButton: Button
-
     private lateinit var copyAllButton: Button
-
-    private lateinit var modelButton: Button
-
     private lateinit var progressBar: ProgressBar
-
     private lateinit var statusText: TextView
-
     private lateinit var resultsContainer: LinearLayout
 
-    private lateinit var engine: YouTubeGrowthEngine
-
-    private lateinit var modelManager: LocalModelManager
+    private val engine = YouTubeGrowthEngine()
 
     private val activityScope =
         CoroutineScope(
-            SupervisorJob() +
-                    Dispatchers.Main
+            SupervisorJob() + Dispatchers.Main
         )
-
-    companion object {
-
-        private const val PICK_MODEL = 1001
-    }
 
     override fun onCreate(
         savedInstanceState: Bundle?
     ) {
-
-        super.onCreate(
-            savedInstanceState
-        )
+        super.onCreate(savedInstanceState)
 
         setContentView(
             R.layout.activity_main
         )
 
         topicInput =
-            findViewById(
-                R.id.topicInput
-            )
+            findViewById(R.id.topicInput)
 
         generateButton =
-            findViewById(
-                R.id.generateButton
-            )
+            findViewById(R.id.generateButton)
 
         clearButton =
-            findViewById(
-                R.id.clearButton
-            )
+            findViewById(R.id.clearButton)
 
         copyAllButton =
-            findViewById(
-                R.id.copyAllButton
-            )
-
-        modelButton =
-            findViewById(
-                R.id.modelButton
-            )
+            findViewById(R.id.copyAllButton)
 
         progressBar =
-            findViewById(
-                R.id.progressBar
-            )
+            findViewById(R.id.progressBar)
 
         statusText =
-            findViewById(
-                R.id.statusText
-            )
+            findViewById(R.id.statusText)
 
         resultsContainer =
-            findViewById(
-                R.id.resultsContainer
-            )
-
-        engine =
-            YouTubeGrowthEngine(this)
-
-        modelManager =
-            LocalModelManager(this)
-
-        updateModelStatus()
-
-        modelButton.setOnClickListener {
-
-            selectModel()
-        }
+            findViewById(R.id.resultsContainer)
 
         generateButton.setOnClickListener {
-
             generateContent()
         }
 
         clearButton.setOnClickListener {
-
             clearResults()
         }
 
         copyAllButton.setOnClickListener {
-
             copyAllResults()
-        }
-    }
-
-    private fun selectModel() {
-
-        val intent =
-            Intent(
-                Intent.ACTION_OPEN_DOCUMENT
-            ).apply {
-
-                addCategory(
-                    Intent.CATEGORY_OPENABLE
-                )
-
-                type = "*/*"
-            }
-
-        startActivityForResult(
-            intent,
-            PICK_MODEL
-        )
-    }
-
-    override fun onActivityResult(
-        requestCode: Int,
-        resultCode: Int,
-        data: Intent?
-    ) {
-
-        super.onActivityResult(
-            requestCode,
-            resultCode,
-            data
-        )
-
-        if (
-            requestCode != PICK_MODEL ||
-            resultCode != RESULT_OK ||
-            data?.data == null
-        ) {
-
-            return
-        }
-
-        val uri =
-            data.data!!
-
-        statusText.text =
-            "Copying GGUF model..."
-
-        Thread {
-
-            try {
-
-                val destination =
-                    modelManager
-                        .getConfiguredModel()
-
-                contentResolver
-                    .openInputStream(uri)
-                    .use { input ->
-
-                        if (input == null) {
-
-                            throw Exception(
-                                "Cannot open selected file."
-                            )
-                        }
-
-                        destination
-                            .outputStream()
-                            .use { output ->
-
-                                input.copyTo(
-                                    output
-                                )
-                            }
-                    }
-
-                runOnUiThread {
-
-                    updateModelStatus()
-
-                    statusText.text =
-                        "GGUF model ready."
-                }
-
-            } catch (e: Exception) {
-
-                runOnUiThread {
-
-                    statusText.text =
-                        "Model error: " +
-                                (
-                                    e.message
-                                        ?: "Unknown error"
-                                )
-                }
-            }
-
-        }.start()
-    }
-
-    private fun updateModelStatus() {
-
-        if (
-            modelManager.modelExists()
-        ) {
-
-            statusText.text =
-                "Model ready: " +
-                        modelManager
-                            .getConfiguredModel()
-                            .name
-
-        } else {
-
-            statusText.text =
-                "No GGUF model. " +
-                        "Tap SELECT GGUF MODEL."
         }
     }
 
     private fun generateContent() {
 
         val topic =
-            topicInput
-                .text
+            topicInput.text
                 .toString()
                 .trim()
 
@@ -266,20 +92,10 @@ class MainActivity : Activity() {
             return
         }
 
-        if (
-            !modelManager.modelExists()
-        ) {
-
-            statusText.text =
-                "First select a GGUF model."
-
-            return
-        }
-
         setLoading(true)
 
         statusText.text =
-            "AI generating..."
+            "Creating content..."
 
         activityScope.launch {
 
@@ -289,27 +105,18 @@ class MainActivity : Activity() {
                     withContext(
                         Dispatchers.Default
                     ) {
-
-                        engine.generate(
-                            topic
-                        )
+                        engine.generate(topic)
                     }
 
-                displayResults(
-                    result
-                )
+                displayResults(result)
 
                 statusText.text =
-                    "Generation complete"
+                    "Ready • No AI model required"
 
             } catch (e: Exception) {
 
                 statusText.text =
-                    "Error: " +
-                            (
-                                e.message
-                                    ?: "Generation failed"
-                            )
+                    "Error: ${e.message}"
 
             } finally {
 
@@ -322,8 +129,7 @@ class MainActivity : Activity() {
         result: GrowthResult
     ) {
 
-        resultsContainer
-            .removeAllViews()
+        resultsContainer.removeAllViews()
 
         addResultSection(
             "Titles",
@@ -424,7 +230,6 @@ class MainActivity : Activity() {
                 text = "COPY"
 
                 setOnClickListener {
-
                     copyText(
                         title,
                         content
@@ -453,15 +258,13 @@ class MainActivity : Activity() {
         val clipboard =
             getSystemService(
                 CLIPBOARD_SERVICE
-            ) as android.content.ClipboardManager
+            ) as ClipboardManager
 
         clipboard.setPrimaryClip(
-
-            android.content.ClipData
-                .newPlainText(
-                    title,
-                    content
-                )
+            ClipData.newPlainText(
+                title,
+                content
+            )
         )
 
         statusText.text =
@@ -474,42 +277,37 @@ class MainActivity : Activity() {
             StringBuilder()
 
         for (
-            i in 0 until
-                    resultsContainer.childCount
+            i in 0 until resultsContainer.childCount
         ) {
 
             val view =
-                resultsContainer
-                    .getChildAt(i)
+                resultsContainer.getChildAt(i)
 
-            if (
-                view is TextView
-            ) {
+            if (view is TextView) {
 
-                builder.append(
-                    view.text
-                )
-
-                builder.append(
-                    "\n\n"
-                )
+                builder
+                    .append(view.text)
+                    .append("\n\n")
             }
         }
 
-        copyText(
-            "YouTube Growth AI",
-            builder.toString()
-        )
+        if (builder.isNotBlank()) {
+
+            copyText(
+                "YouTube Growth AI",
+                builder.toString()
+            )
+        }
     }
 
     private fun clearResults() {
 
         topicInput.text.clear()
 
-        resultsContainer
-            .removeAllViews()
+        resultsContainer.removeAllViews()
 
-        updateModelStatus()
+        statusText.text =
+            "Ready • No AI model required"
     }
 
     private fun setLoading(
@@ -529,9 +327,6 @@ class MainActivity : Activity() {
             !loading
 
         copyAllButton.isEnabled =
-            !loading
-
-        modelButton.isEnabled =
             !loading
     }
 
