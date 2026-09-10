@@ -17,4 +17,12 @@
 
     <color name="button_disabled">#3A3D44</color>
 
+    <!-- LIGHT THEME COLORS (used by Theme Toggle feature) -->
+    <color name="background_light">#F5F6F8</color>
+    <color name="card_background_light">#FFFFFF</color>
+    <color name="input_background_light">#EFF1F4</color>
+    <color name="border_color_light">#DDE1E6</color>
+    <color name="text_primary_light">#101318</color>
+    <color name="text_secondary_light">#5B6472</color>
+
 </resources>
