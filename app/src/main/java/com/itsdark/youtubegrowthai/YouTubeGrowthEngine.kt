@@ -2,7 +2,16 @@ package com.itsdark.youtubegrowthai
 
 class YouTubeGrowthEngine {
 
-    fun generate(topic: String): GrowthResult {
+    // tone and category are optional and default to the app's original
+    // behavior. variationSeed defaults to 0, which reproduces the exact
+    // original deterministic output. Passing a non-zero seed (used by the
+    // Regenerate feature) shuffles titles/hook/CTA choices for fresh results.
+    fun generate(
+        topic: String,
+        tone: String = "Default",
+        category: String = "General",
+        variationSeed: Int = 0
+    ): GrowthResult {
 
         val original = topic.trim()
 
@@ -15,19 +24,40 @@ class YouTubeGrowthEngine {
 
         val subject = makeSubject(clean)
 
+        val random =
+            if (variationSeed != 0)
+                kotlin.random.Random(variationSeed)
+            else
+                null
+
+        var titles = makeTitles(subject, lower)
+        var hook = makeHook(subject, lower)
+        var cta = """
+Which moment was your favorite? 👀
+Comment below and subscribe for more Shorts! 🔔
+""".trimIndent()
+
+        if (random != null) {
+
+            titles = shuffleTitles(titles, random)
+            hook = pickHookVariant(subject, lower, random)
+            cta = applyToneToCta(cta, tone)
+
+        } else if (tone != "Default") {
+
+            cta = applyToneToCta(cta, tone)
+        }
+
         return GrowthResult(
-            titles = makeTitles(subject, lower),
+            titles = titles,
             description = makeDescription(subject, lower),
-            hook = makeHook(subject, lower),
-            hashtags = makeHashtags(subject, lower),
+            hook = hook,
+            hashtags = makeHashtags(subject, lower, category),
             keywords = makeKeywords(subject, lower),
 
             thumbnailText = makeThumbnailText(subject, lower),
 
-            cta = """
-Which moment was your favorite? 👀
-Comment below and subscribe for more Shorts! 🔔
-""".trimIndent(),
+            cta = cta,
 
             growthTips = """
 1. Start with the strongest moment immediately.
@@ -39,6 +69,91 @@ Comment below and subscribe for more Shorts! 🔔
 
             alternativeTitles = makeAlternativeTitles(subject, lower)
         )
+    }
+
+    // =========================================================
+    // REGENERATE / TONE HELPERS (new)
+    // =========================================================
+
+    private fun shuffleTitles(
+        titlesText: String,
+        random: kotlin.random.Random
+    ): String {
+
+        val lines = titlesText
+            .split("\n")
+            .map { it.substringAfter(". ") }
+            .toMutableList()
+
+        lines.shuffle(random)
+
+        return lines
+            .mapIndexed { index, title ->
+                "${index + 1}. $title"
+            }
+            .joinToString("\n")
+    }
+
+    private fun pickHookVariant(
+        subject: String,
+        lower: String,
+        random: kotlin.random.Random
+    ): String {
+
+        val pool: List<String> = when {
+
+            lower.contains("aura") -> listOf(
+                "You think you've seen aura? Wait until this moment. 👀🔥",
+                "Wait for it... this aura is unreal 👀🔥",
+                "This aura hits different every time ⚡"
+            )
+
+            lower.contains(" vs ") ||
+            lower.contains("battle") ||
+            lower.contains("fight") -> listOf(
+                "Only one can win... but who? 👀⚡",
+                "Which one takes the win? 🔥👀",
+                "This fight is closer than you think ⚡"
+            )
+
+            lower.contains("edit") -> listOf(
+                "This edit gets better every second. Don't skip! 🔥",
+                "Every second of this edit slaps 🔥",
+                "This edit was worth the wait 👀"
+            )
+
+            else -> listOf(
+                "Wait until you see what happens next... 👀🔥",
+                "This moment changes everything 🔥",
+                "You need to see how this ends 👀"
+            )
+        }
+
+        return pool[random.nextInt(pool.size)]
+    }
+
+    private fun applyToneToCta(
+        baseCta: String,
+        tone: String
+    ): String {
+
+        return when (tone) {
+
+            "Funny" ->
+                "$baseCta\n😂 Don't forget to laugh and subscribe!"
+
+            "Serious" ->
+                baseCta
+
+            "Motivational" ->
+                "$baseCta\n💪 Keep pushing — subscribe for more inspiration!"
+
+            "Educational" ->
+                "Learned something new? 📚\nSubscribe for more helpful Shorts! 🔔"
+
+            else ->
+                baseCta
+        }
     }
 
     // =========================================================
@@ -435,7 +550,8 @@ Let us know in the comments! 👇
 
     private fun makeHashtags(
         subject: String,
-        lower: String
+        lower: String,
+        category: String = "General"
     ): String {
 
         val hashtags = mutableListOf<String>()
@@ -493,6 +609,34 @@ Let us know in the comments! 👇
             lower.contains("edit") -> {
 
                 hashtags.add("#Edit")
+                hashtags.add("#AnimeEdit")
+            }
+        }
+
+        when (category) {
+
+            "Gaming" -> {
+                hashtags.add("#Gaming")
+                hashtags.add("#Gameplay")
+            }
+
+            "Tech" -> {
+                hashtags.add("#Tech")
+                hashtags.add("#TechShorts")
+            }
+
+            "Vlog" -> {
+                hashtags.add("#Vlog")
+                hashtags.add("#DailyVlog")
+            }
+
+            "Comedy" -> {
+                hashtags.add("#Comedy")
+                hashtags.add("#Funny")
+            }
+
+            "Anime" -> {
+                hashtags.add("#Anime")
                 hashtags.add("#AnimeEdit")
             }
         }
