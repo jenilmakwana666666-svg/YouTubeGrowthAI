@@ -1,9 +1,13 @@
 package com.itsdark.youtubegrowthai
 
 import android.app.Activity
+import android.content.ActivityNotFoundException
 import android.content.ClipData
 import android.content.ClipboardManager
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
@@ -21,6 +25,7 @@ class MainActivity : Activity() {
 
     private lateinit var topicInput: EditText
     private lateinit var generateButton: Button
+    private lateinit var visitChannelButton: Button
     private lateinit var clearButton: Button
     private lateinit var copyAllButton: Button
     private lateinit var progressBar: ProgressBar
@@ -49,6 +54,9 @@ class MainActivity : Activity() {
         generateButton =
             findViewById(R.id.generateButton)
 
+        visitChannelButton =
+            findViewById(R.id.visitChannelButton)
+
         clearButton =
             findViewById(R.id.clearButton)
 
@@ -66,6 +74,11 @@ class MainActivity : Activity() {
 
         generateButton.setOnClickListener {
             generateContent()
+        }
+
+        visitChannelButton.setOnClickListener {
+            Log.d("YTGrowthAI", "Visit My Channel button clicked")
+            openChannel()
         }
 
         clearButton.setOnClickListener {
@@ -248,6 +261,45 @@ class MainActivity : Activity() {
         resultsContainer.addView(
             copyButton
         )
+    }
+
+    private fun openChannel() {
+
+        val channelUrl =
+            "https://www.youtube.com/@itsdark_444"
+
+        try {
+
+            val youtubeAppIntent =
+                Intent(
+                    Intent.ACTION_VIEW,
+                    Uri.parse(channelUrl)
+                )
+
+            youtubeAppIntent.setPackage(
+                "com.google.android.youtube"
+            )
+
+            startActivity(youtubeAppIntent)
+
+        } catch (e: ActivityNotFoundException) {
+
+            try {
+
+                val browserIntent =
+                    Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse(channelUrl)
+                    )
+
+                startActivity(browserIntent)
+
+            } catch (e2: ActivityNotFoundException) {
+
+                statusText.text =
+                    "Unable to open channel link"
+            }
+        }
     }
 
     private fun copyText(
