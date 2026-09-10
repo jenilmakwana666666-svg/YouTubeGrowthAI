@@ -96,6 +96,19 @@
             android:background="@drawable/generate_button"
             android:minHeight="0dp" />
 
+        <!-- VISIT CHANNEL BUTTON -->
+
+        <Button
+            android:id="@+id/visitChannelButton"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="10dp"
+            android:text="Visit My Channel"
+            android:textAllCaps="false"
+            android:textColor="@color/text_primary"
+            android:background="@drawable/secondary_button"
+            android:minHeight="0dp" />
+
         <!-- CLEAR + COPY -->
 
         <LinearLayout
