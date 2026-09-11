@@ -590,9 +590,7 @@ class MainActivity : Activity() {
         resultsContainer.addView(
             buttonRow
         )
-    }
-
-    // =========================================================
+    }// =========================================================
     // VISIT MY CHANNEL (unchanged)
     // =========================================================
 
@@ -838,4 +836,334 @@ class MainActivity : Activity() {
         if (content.isBlank()) {
 
             statusText.text =
-                "Generat
+                "Generate content first"
+
+            return
+        }
+
+        val shareIntent =
+            Intent(Intent.ACTION_SEND).apply {
+
+                type = "text/plain"
+
+                putExtra(
+                    Intent.EXTRA_TEXT,
+                    content
+                )
+            }
+
+        try {
+
+            startActivity(
+                Intent.createChooser(
+                    shareIntent,
+                    "Share content via"
+                )
+            )
+
+        } catch (e: ActivityNotFoundException) {
+
+            statusText.text =
+                "No app available to share"
+        }
+    }
+
+    // =========================================================
+    // FEATURE 6: EXPORT AS TEXT FILE
+    // =========================================================
+
+    private fun exportAsFile() {
+
+        val content = collectResultsText()
+
+        if (content.isBlank()) {
+
+            statusText.text =
+                "Generate content first"
+
+            return
+        }
+
+        try {
+
+            val exportsDir =
+                File(
+                    getExternalFilesDir(null),
+                    "exports"
+                )
+
+            if (!exportsDir.exists()) {
+                exportsDir.mkdirs()
+            }
+
+            val fileName =
+                "growth_content_${System.currentTimeMillis()}.txt"
+
+            val file =
+                File(exportsDir, fileName)
+
+            FileOutputStream(file).use { stream ->
+                stream.write(content.toByteArray())
+            }
+
+            val uri =
+                FileProvider.getUriForFile(
+                    this,
+                    "$packageName.fileprovider",
+                    file
+                )
+
+            val shareIntent =
+                Intent(Intent.ACTION_SEND).apply {
+
+                    type = "text/plain"
+
+                    putExtra(Intent.EXTRA_STREAM, uri)
+
+                    addFlags(
+                        Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    )
+                }
+
+            startActivity(
+                Intent.createChooser(
+                    shareIntent,
+                    "Export content via"
+                )
+            )
+
+            statusText.text =
+                "Exported as $fileName"
+
+        } catch (e: Exception) {
+
+            statusText.text =
+                "Export failed: ${e.message}"
+        }
+    }
+
+    private fun collectResultsText(): String {
+
+        val builder = StringBuilder()
+
+        for (
+            i in 0 until resultsContainer.childCount
+        ) {
+
+            val view =
+                resultsContainer.getChildAt(i)
+
+            if (view is TextView) {
+
+                builder
+                    .append(view.text)
+                    .append("\n\n")
+            }
+        }
+
+        return builder.toString().trim()
+    }
+
+    // =========================================================
+    // FEATURE 5: FAVORITES / BOOKMARK
+    // =========================================================
+
+    private fun saveFavorite(
+        title: String,
+        content: String
+    ) {
+
+        val array =
+            JSONArray(
+                prefs.getString(KEY_FAVORITES, "[]")
+            )
+
+        val entry =
+            JSONObject().apply {
+                put("title", title)
+                put("content", content)
+            }
+
+        array.put(entry)
+
+        prefs.edit()
+            .putString(KEY_FAVORITES, array.toString())
+            .apply()
+
+        statusText.text =
+            "$title saved to favorites"
+    }
+
+    private fun showFavoritesDialog() {
+
+        val array =
+            JSONArray(
+                prefs.getString(KEY_FAVORITES, "[]")
+            )
+
+        if (array.length() == 0) {
+
+            statusText.text =
+                "No favorites saved yet"
+
+            return
+        }
+
+        val items =
+            Array(array.length()) { index ->
+
+                val obj = array.getJSONObject(index)
+
+                obj.getString("title")
+            }
+
+        AlertDialog.Builder(this)
+            .setTitle("My Favorites — tap to copy")
+            .setItems(items) { _, which ->
+
+                val obj = array.getJSONObject(which)
+
+                val clipboard =
+                    getSystemService(
+                        CLIPBOARD_SERVICE
+                    ) as ClipboardManager
+
+                clipboard.setPrimaryClip(
+                    ClipData.newPlainText(
+                        obj.getString("title"),
+                        obj.getString("content")
+                    )
+                )
+
+                statusText.text =
+                    "${obj.getString("title")} copied"
+            }
+            .setNegativeButton("Close", null)
+            .setNeutralButton("Clear All") { _, _ ->
+
+                prefs.edit()
+                    .putString(KEY_FAVORITES, "[]")
+                    .apply()
+
+                statusText.text =
+                    "Favorites cleared"
+            }
+            .show()
+    }
+
+    // =========================================================
+    // FEATURE 7: DARK / LIGHT THEME TOGGLE
+    // =========================================================
+
+    private fun toggleTheme() {
+
+        val isLight =
+            !prefs.getBoolean(KEY_LIGHT_THEME, false)
+
+        prefs.edit()
+            .putBoolean(KEY_LIGHT_THEME, isLight)
+            .apply()
+
+        applyTheme(isLight)
+    }
+
+    private fun applyTheme(isLight: Boolean) {
+
+        val bgColor =
+            if (isLight)
+                getColor(R.color.background_light)
+            else
+                getColor(R.color.background)
+
+        val cardBg =
+            if (isLight)
+                R.drawable.card_background_light
+            else
+                R.drawable.card_background
+
+        val inputBg =
+            if (isLight)
+                R.drawable.input_background_light
+            else
+                R.drawable.input_background
+
+        val secondaryBg =
+            if (isLight)
+                R.drawable.secondary_button_light
+            else
+                R.drawable.secondary_button
+
+        val textPrimary =
+            if (isLight)
+                getColor(R.color.text_primary_light)
+            else
+                getColor(R.color.text_primary)
+
+        val textSecondary =
+            if (isLight)
+                getColor(R.color.text_secondary_light)
+            else
+                getColor(R.color.text_secondary)
+
+        rootScroll.setBackgroundColor(bgColor)
+        rootContainer.setBackgroundColor(bgColor)
+
+        optionsCard.setBackgroundResource(cardBg)
+        topicCard.setBackgroundResource(cardBg)
+
+        topicInput.setBackgroundResource(inputBg)
+        topicInput.setTextColor(textPrimary)
+        topicInput.setHintTextColor(textSecondary)
+
+        categorySpinner.setBackgroundResource(inputBg)
+        toneSpinner.setBackgroundResource(inputBg)
+
+        headerTitle.setTextColor(textPrimary)
+        headerSubtitle.setTextColor(textSecondary)
+        optionsLabel.setTextColor(textSecondary)
+        topicLabel.setTextColor(textSecondary)
+        resultsLabel.setTextColor(textPrimary)
+        footerText.setTextColor(textSecondary)
+        statusText.setTextColor(textSecondary)
+
+        val secondaryButtons =
+            listOf(
+                clearButton,
+                copyAllButton,
+                visitChannelButton,
+                regenerateButton,
+                recentTopicsButton,
+                trendingHashtagsButton,
+                shareButton,
+                exportButton,
+                favoritesButton,
+                themeToggleButton,
+                settingsButton
+            )
+
+        secondaryButtons.forEach { button ->
+            button.setBackgroundResource(secondaryBg)
+            button.setTextColor(textPrimary)
+        }
+
+        themeToggleButton.text =
+            if (isLight) "Dark Mode" else "Light Mode"
+
+        // Retheme any already-generated result text
+        for (i in 0 until resultsContainer.childCount) {
+
+            val view = resultsContainer.getChildAt(i)
+
+            if (view is TextView) {
+                view.setTextColor(textPrimary)
+            }
+        }
+    }
+
+    override fun onDestroy() {
+
+        activityScope.cancel()
+
+        super.onDestroy()
+    }
+}
