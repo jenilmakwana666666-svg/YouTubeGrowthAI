@@ -8,6 +8,8 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
@@ -48,6 +50,7 @@ class MainActivity : Activity() {
     private lateinit var recentTopicsButton: Button
     private lateinit var trendingHashtagsButton: Button
     private lateinit var regenerateButton: Button
+    private lateinit var liveTrendingButton: Button
     private lateinit var shareButton: Button
     private lateinit var exportButton: Button
     private lateinit var favoritesButton: Button
@@ -66,7 +69,8 @@ class MainActivity : Activity() {
     private lateinit var resultsLabel: TextView
     private lateinit var footerText: TextView
 
-    private val engine = YouTubeGrowthEngine()
+     private val engine = YouTubeGrowthEngine()
+    private val trendingRepository = TrendingRepository()
 
     private val activityScope =
         CoroutineScope(
@@ -188,6 +192,9 @@ class MainActivity : Activity() {
         regenerateButton =
             findViewById(R.id.regenerateButton)
 
+        liveTrendingButton =
+            findViewById(R.id.liveTrendingButton)
+
         shareButton =
             findViewById(R.id.shareButton)
 
@@ -280,10 +287,14 @@ class MainActivity : Activity() {
         copyAllButton.setOnClickListener {
             copyAllResults()
         }
-
-        regenerateButton.setOnClickListener {
+       regenerateButton.setOnClickListener {
             regenerateContent()
         }
+
+        liveTrendingButton.setOnClickListener {
+            liveTrendingGenerate()
+        }
+        
 
         recentTopicsButton.setOnClickListener {
             showRecentTopicsDialog()
@@ -720,6 +731,9 @@ class MainActivity : Activity() {
 
         regenerateButton.isEnabled =
             !loading && lastTopic.isNotEmpty()
+
+        liveTrendingButton.isEnabled =
+            !loading
     }
 
     // =========================================================
@@ -1132,6 +1146,7 @@ class MainActivity : Activity() {
                 copyAllButton,
                 visitChannelButton,
                 regenerateButton,
+                liveTrendingButton,
                 recentTopicsButton,
                 trendingHashtagsButton,
                 shareButton,
@@ -1159,7 +1174,157 @@ class MainActivity : Activity() {
             }
         }
     }
+// =========================================================
+    // LIVE TRENDING GENERATE (uses YouTube Data API — needs internet
+    // and a saved API key from Settings). No offline fallback: on any
+    // failure this only shows an error in statusText, as requested.
+    // =========================================================
 
+    private fun liveTrendingGenerate() {
+
+        val topic =
+            topicInput.text
+                .toString()
+                .trim()
+
+        if (topic.isEmpty()) {
+
+            topicInput.error =
+                "Enter a topic first"
+
+            return
+        }
+
+        if (!isNetworkAvailable()) {
+
+            statusText.text =
+                "No internet connection"
+
+            return
+        }
+
+        val apiKey =
+            prefs.getString(
+                AboutActivity.KEY_API_KEY,
+                ""
+            ) ?: ""
+
+        if (apiKey.isEmpty()) {
+
+            statusText.text =
+                "Set your YouTube API key in Settings / About first"
+
+            return
+        }
+
+        val category =
+            categorySpinner.selectedItem
+                ?.toString()
+                ?: "General"
+
+        val tone =
+            toneSpinner.selectedItem
+                ?.toString()
+                ?: "Default"
+
+        setLoading(true)
+
+        statusText.text =
+            "Fetching live trending data..."
+
+        activityScope.launch {
+
+            try {
+
+                val trending =
+                    withContext(Dispatchers.IO) {
+                        trendingRepository.fetchTrending(
+                            apiKey = apiKey,
+                            topic = topic
+                        )
+                    }
+
+                val base =
+                    withContext(Dispatchers.Default) {
+                        engine.generate(
+                            topic = topic,
+                            tone = tone,
+                            category = category
+                        )
+                    }
+
+                val liveTitles =
+                    trending.titles
+                        .mapIndexed { index, title ->
+                            "${index + 1}. $title"
+                        }
+                        .joinToString("\n")
+
+                val liveHashtags =
+                    trending.tags
+                        .map {
+                            "#" + it.replace(
+                                Regex("[^A-Za-z0-9]"),
+                                ""
+                            )
+                        }
+                        .filter { it.length > 1 }
+                        .distinct()
+                        .take(12)
+                        .joinToString(" ")
+
+                val result =
+                    base.copy(
+                        titles =
+                            liveTitles.ifBlank { base.titles },
+                        hashtags =
+                            liveHashtags.ifBlank { base.hashtags }
+                    )
+
+                displayResults(result)
+
+                lastTopic = topic
+                lastCategory = category
+                lastTone = tone
+
+                regenerateButton.isEnabled = true
+
+                saveRecentTopic(topic)
+
+                statusText.text =
+                    "Live trending data loaded"
+
+            } catch (e: Exception) {
+
+                statusText.text =
+                    "Trending fetch failed: ${e.message}"
+
+            } finally {
+
+                setLoading(false)
+            }
+        }
+    }
+
+    private fun isNetworkAvailable(): Boolean {
+
+        val connectivityManager =
+            getSystemService(
+                CONNECTIVITY_SERVICE
+            ) as ConnectivityManager
+
+        val network =
+            connectivityManager.activeNetwork
+                ?: return false
+
+        val capabilities =
+            connectivityManager.getNetworkCapabilities(network)
+                ?: return false
+
+        return capabilities.hasCapability(
+            NetworkCapabilities.NET_CAPABILITY_INTERNET
+        )
+    }
     override fun onDestroy() {
 
         activityScope.cancel()
