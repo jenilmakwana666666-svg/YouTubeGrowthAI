@@ -236,6 +236,19 @@
             android:enabled="false"
             android:minHeight="0dp" />
 
+        <!-- LIVE TRENDING BUTTON -->
+
+        <Button
+            android:id="@+id/liveTrendingButton"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="10dp"
+            android:text="Live Trending Generate"
+            android:textAllCaps="false"
+            android:textColor="@color/text_primary"
+            android:background="@drawable/secondary_button"
+            android:minHeight="0dp" />
+
         <!-- VISIT CHANNEL BUTTON -->
 
         <Button
