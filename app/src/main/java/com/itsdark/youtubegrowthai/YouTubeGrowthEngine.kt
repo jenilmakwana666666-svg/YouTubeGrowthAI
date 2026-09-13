@@ -6,11 +6,12 @@ class YouTubeGrowthEngine {
     // behavior. variationSeed defaults to 0, which reproduces the exact
     // original deterministic output. Passing a non-zero seed (used by the
     // Regenerate feature) shuffles titles/hook/CTA choices for fresh results.
-    fun generate(
+fun generate(
         topic: String,
         tone: String = "Default",
         category: String = "General",
-        variationSeed: Int = 0
+        variationSeed: Int = 0,
+        videoLength: String = "Shorts"
     ): GrowthResult {
 
         val original = topic.trim()
@@ -32,7 +33,15 @@ class YouTubeGrowthEngine {
 
         var titles = makeTitles(subject, lower)
         var hook = makeHook(subject, lower)
-        var cta = """
+
+        var cta =
+            if (videoLength == "Long-form")
+                """
+Enjoyed the full video? 👍
+Like, share and subscribe for more content like this! 🔔
+""".trimIndent()
+            else
+                """
 Which moment was your favorite? 👀
 Comment below and subscribe for more Shorts! 🔔
 """.trimIndent()
@@ -52,14 +61,24 @@ Comment below and subscribe for more Shorts! 🔔
             titles = titles,
             description = makeDescription(subject, lower),
             hook = hook,
-            hashtags = makeHashtags(subject, lower, category),
+            hashtags = makeHashtags(subject, lower, category, videoLength),
             keywords = makeKeywords(subject, lower),
 
             thumbnailText = makeThumbnailText(subject, lower),
 
             cta = cta,
 
-            growthTips = """
+            growthTips =
+                if (videoLength == "Long-form")
+                    """
+1. Hook viewers in the first 15 seconds with a clear promise.
+2. Add timestamps/chapters for easy navigation.
+3. Use a clear, searchable title and detailed description.
+4. Encourage comments with a direct question.
+5. End with a strong call-to-action for your next video.
+""".trimIndent()
+                else
+                    """
 1. Start with the strongest moment immediately.
 2. Keep the first few seconds highly engaging.
 3. Use a clear and curiosity-driven title.
@@ -69,7 +88,7 @@ Comment below and subscribe for more Shorts! 🔔
 
             alternativeTitles = makeAlternativeTitles(subject, lower)
         )
-    }
+}
 
     // =========================================================
     // REGENERATE / TONE HELPERS (new)
@@ -560,11 +579,11 @@ Let us know in the comments! 👇
     private fun makeHashtags(
         subject: String,
         lower: String,
-        category: String = "General"
+        category: String = "General",
+        videoLength: String = "Shorts"
     ): String {
 
         val hashtags = mutableListOf<String>()
-
         // YOUR FIXED BRAND HASHTAGS
         hashtags.add("#itsdark")
         hashtags.add("#itsdark444")
@@ -650,9 +669,14 @@ Let us know in the comments! 👇
             }
         }
 
-        hashtags.add("#Shorts")
-        hashtags.add("#YouTubeShorts")
+        
+       if (videoLength == "Long-form") {
+            hashtags.add("#YouTubeVideo")
+        } else {
+            hashtags.add("#Shorts")
+        }
 
+        hashtags.add("#YouTubeShorts")
         return hashtags
             .distinct()
             .take(12)
