@@ -132,6 +132,15 @@ Comment below and subscribe for more Shorts! 🔔
         return pool[random.nextInt(pool.size)]
     }
 
+    // Public wrapper so other classes (e.g. the Live Trending feature)
+    // can reuse the same tone logic without duplicating it.
+    fun applyTone(
+        baseCta: String,
+        tone: String
+    ): String {
+        return applyToneToCta(baseCta, tone)
+    }
+
     private fun applyToneToCta(
         baseCta: String,
         tone: String
