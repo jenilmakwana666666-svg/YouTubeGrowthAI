@@ -47,6 +47,10 @@ class MainActivity : Activity() {
     // ---------- NEW VIEWS (10 new features) ----------
     private lateinit var categorySpinner: Spinner
     private lateinit var toneSpinner: Spinner
+    private lateinit var videoLengthSpinner: Spinner
+    private lateinit var competitorAnalyzeButton: Button
+    private lateinit var abTestButton: Button
+    private lateinit var postingTimeButton: Button
     private lateinit var recentTopicsButton: Button
     private lateinit var trendingHashtagsButton: Button
     private lateinit var regenerateButton: Button
@@ -71,6 +75,7 @@ class MainActivity : Activity() {
 
      private val engine = YouTubeGrowthEngine()
     private val trendingRepository = TrendingRepository()
+    private val titleScorer = TitleScorer()
 
     private val activityScope =
         CoroutineScope(
@@ -82,6 +87,7 @@ class MainActivity : Activity() {
     private var lastTopic: String = ""
     private var lastCategory: String = "General"
     private var lastTone: String = "Default"
+    private var lastVideoLength: String = "Shorts"
 
     private val categories =
         listOf(
@@ -102,6 +108,11 @@ class MainActivity : Activity() {
             "Educational"
         )
 
+    private val videoLengths =
+        listOf(
+            "Shorts",
+            "Long-form"
+        )
     private val trendingHashtags =
         listOf(
             "#Shorts",
