@@ -13,8 +13,20 @@ class TrendingRepository {
 
     data class TrendingData(
         val titles: List<String>,
-        val tags: List<String>
+        val tags: List<String>,
+        val descriptions: List<String>,
+        val keywords: List<String>
     )
+
+    private val stopWords =
+        setOf(
+            "this", "that", "with", "from", "your", "have", "will",
+            "just", "what", "when", "were", "they", "them", "then",
+            "than", "into", "about", "here", "there", "video", "shorts",
+            "short", "youtube", "the", "and", "for", "you", "are",
+            "all", "new", "how", "why", "who", "our", "out", "get",
+            "https", "http", "www", "com"
+        )
 
     // Throws an Exception on any failure — caller must NOT fall back to
     // offline generation, per app design (show error only).
@@ -77,6 +89,7 @@ class TrendingRepository {
         }
 
         val tags = mutableListOf<String>()
+        val descriptions = mutableListOf<String>()
 
         if (videoIds.isNotEmpty()) {
 
@@ -112,6 +125,23 @@ class TrendingRepository {
                                 tags.add(tagArray.getString(j))
                             }
                         }
+
+                        val description =
+                            snippet.optString("description", "")
+
+                        if (description.isNotBlank()) {
+
+                            val firstLines =
+                                description
+                                    .lineSequence()
+                                    .filter { it.isNotBlank() }
+                                    .take(2)
+                                    .joinToString(" ")
+
+                            if (firstLines.isNotBlank()) {
+                                descriptions.add(firstLines)
+                            }
+                        }
                     }
                 }
             }
@@ -121,10 +151,63 @@ class TrendingRepository {
             throw Exception("No trending results found for this topic")
         }
 
+        val keywords =
+            extractKeywords(
+                titles = titles,
+                tags = tags,
+                descriptions = descriptions
+            )
+
         return TrendingData(
             titles = titles.distinct().take(10),
-            tags = tags.distinct().take(20)
+            tags = tags.distinct().take(20),
+            descriptions = descriptions.distinct().take(10),
+            keywords = keywords
         )
+    }
+
+    // Frequency-based keyword extraction from real trending titles, tags
+    // and descriptions — used to build the "optimized" description/hook/
+    // thumbnail text for the Live Trending feature.
+    private fun extractKeywords(
+        titles: List<String>,
+        tags: List<String>,
+        descriptions: List<String>
+    ): List<String> {
+
+        val wordCounts = mutableMapOf<String, Int>()
+
+        val allText =
+            (titles + descriptions).joinToString(" ")
+
+        val words =
+            allText
+                .lowercase()
+                .split(Regex("[^a-z0-9']+"))
+                .filter {
+                    it.length >= 4 && it !in stopWords
+                }
+
+        words.forEach {
+            wordCounts[it] = (wordCounts[it] ?: 0) + 1
+        }
+
+        // Tags are already curated keywords — weight them higher.
+        tags.forEach { tag ->
+
+            val cleaned =
+                tag.lowercase().trim()
+
+            if (cleaned.length >= 3 && cleaned !in stopWords) {
+                wordCounts[cleaned] = (wordCounts[cleaned] ?: 0) + 3
+            }
+        }
+
+        return wordCounts.entries
+            .sortedByDescending { it.value }
+            .map { it.key }
+            .distinct()
+            .take(15)
     }
 
     private fun httpGet(urlString: String): String {
