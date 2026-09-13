@@ -210,6 +210,98 @@ class TrendingRepository {
             .take(15)
     }
 
+    data class VideoDetails(
+        val title: String,
+        val description: String,
+        val tags: List<String>,
+        val viewCount: String,
+        val channelTitle: String
+    )
+
+    // Extracts a YouTube video ID from common URL formats, or returns the
+    // input as-is if it already looks like a bare video ID.
+    fun extractVideoId(input: String): String? {
+
+        val trimmed = input.trim()
+
+        val patterns =
+            listOf(
+                Regex("(?:v=|/shorts/|youtu\\.be/|/embed/)([A-Za-z0-9_-]{11})")
+            )
+
+        for (pattern in patterns) {
+
+            val match = pattern.find(trimmed)
+
+            if (match != null) {
+                return match.groupValues[1]
+            }
+        }
+
+        if (Regex("^[A-Za-z0-9_-]{11}$").matches(trimmed)) {
+            return trimmed
+        }
+
+        return null
+    }
+
+    // Throws an Exception on any failure (invalid URL, API error, video
+    // not found) — caller shows the error only, no fallback.
+    fun fetchVideoDetails(
+        apiKey: String,
+        videoId: String
+    ): VideoDetails {
+
+        val videosUrl =
+            "https://www.googleapis.com/youtube/v3/videos" +
+                "?part=snippet,statistics" +
+                "&id=$videoId" +
+                "&key=$apiKey"
+
+        val videosJson =
+            JSONObject(httpGet(videosUrl))
+
+        if (videosJson.has("error")) {
+
+            val message =
+                videosJson.getJSONObject("error")
+                    .optString("message", "YouTube API error")
+
+            throw Exception(message)
+        }
+
+        val items = videosJson.optJSONArray("items")
+
+        if (items == null || items.length() == 0) {
+            throw Exception("Video not found — check the URL")
+        }
+
+        val item = items.getJSONObject(0)
+        val snippet = item.getJSONObject("snippet")
+
+        val tags = mutableListOf<String>()
+        val tagArray = snippet.optJSONArray("tags")
+
+        if (tagArray != null) {
+            for (i in 0 until tagArray.length()) {
+                tags.add(tagArray.getString(i))
+            }
+        }
+
+        val viewCount =
+            item.optJSONObject("statistics")
+                ?.optString("viewCount", "N/A")
+                ?: "N/A"
+
+        return VideoDetails(
+            title = snippet.optString("title", ""),
+            description = snippet.optString("description", ""),
+            tags = tags,
+            viewCount = viewCount,
+            channelTitle = snippet.optString("channelTitle", "")
+        )
+    }
+
     private fun httpGet(urlString: String): String {
 
         val connection =
