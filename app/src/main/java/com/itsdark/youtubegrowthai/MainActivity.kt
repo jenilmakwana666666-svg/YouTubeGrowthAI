@@ -194,6 +194,18 @@ class MainActivity : Activity() {
         toneSpinner =
             findViewById(R.id.toneSpinner)
 
+        videoLengthSpinner =
+            findViewById(R.id.videoLengthSpinner)
+
+        competitorAnalyzeButton =
+            findViewById(R.id.competitorAnalyzeButton)
+
+        abTestButton =
+            findViewById(R.id.abTestButton)
+
+        postingTimeButton =
+            findViewById(R.id.postingTimeButton)
+
         recentTopicsButton =
             findViewById(R.id.recentTopicsButton)
 
@@ -279,6 +291,19 @@ class MainActivity : Activity() {
         )
 
         toneSpinner.adapter = toneAdapter
+
+        val videoLengthAdapter =
+            ArrayAdapter(
+                this,
+                android.R.layout.simple_spinner_item,
+                videoLengths
+            )
+
+        videoLengthAdapter.setDropDownViewResource(
+            android.R.layout.simple_spinner_dropdown_item
+        )
+
+        videoLengthSpinner.adapter = videoLengthAdapter
     }
 
     private fun setupClickListeners() {
@@ -309,6 +334,18 @@ class MainActivity : Activity() {
 
         recentTopicsButton.setOnClickListener {
             showRecentTopicsDialog()
+        }
+
+        competitorAnalyzeButton.setOnClickListener {
+            showCompetitorAnalyzerDialog()
+        }
+
+        abTestButton.setOnClickListener {
+            showAbTestDialog()
+        }
+
+        postingTimeButton.setOnClickListener {
+            showPostingTimeDialog()
         }
 
         trendingHashtagsButton.setOnClickListener {
@@ -370,6 +407,11 @@ class MainActivity : Activity() {
                 ?.toString()
                 ?: "Default"
 
+        val videoLength =
+            videoLengthSpinner.selectedItem
+                ?.toString()
+                ?: "Shorts"
+
         setLoading(true)
 
         statusText.text =
@@ -386,7 +428,8 @@ class MainActivity : Activity() {
                         engine.generate(
                             topic = topic,
                             tone = tone,
-                            category = category
+                            category = category,
+                            videoLength = videoLength
                         )
                     }
 
@@ -395,6 +438,7 @@ class MainActivity : Activity() {
                 lastTopic = topic
                 lastCategory = category
                 lastTone = tone
+                lastVideoLength = videoLength
 
                 regenerateButton.isEnabled = true
 
@@ -446,7 +490,8 @@ class MainActivity : Activity() {
                             topic = lastTopic,
                             tone = lastTone,
                             category = lastCategory,
-                            variationSeed = seed
+                            variationSeed = seed,
+                            videoLength = lastVideoLength
                         )
                     }
 
@@ -1142,7 +1187,7 @@ class MainActivity : Activity() {
 
         categorySpinner.setBackgroundResource(inputBg)
         toneSpinner.setBackgroundResource(inputBg)
-
+        videoLengthSpinner.setBackgroundResource(inputBg)
         headerTitle.setTextColor(textPrimary)
         headerSubtitle.setTextColor(textSecondary)
         optionsLabel.setTextColor(textSecondary)
@@ -1160,6 +1205,9 @@ class MainActivity : Activity() {
                 liveTrendingButton,
                 recentTopicsButton,
                 trendingHashtagsButton,
+                competitorAnalyzeButton,
+                abTestButton,
+                postingTimeButton,
                 shareButton,
                 exportButton,
                 favoritesButton,
@@ -1477,6 +1525,259 @@ DON'T MISS THIS ⚡
             NetworkCapabilities.NET_CAPABILITY_INTERNET
         )
     }
+    // =========================================================
+    // COMPETITOR ANALYZER (uses YouTube Data API — needs internet +
+    // saved API key). No offline fallback — shows error only.
+    // =========================================================
+
+    private fun showCompetitorAnalyzerDialog() {
+
+        val input =
+            EditText(this).apply {
+                hint = "Paste competitor video URL or ID"
+            }
+
+        val container =
+            LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL
+                setPadding(48, 24, 48, 0)
+                addView(input)
+            }
+
+        AlertDialog.Builder(this)
+            .setTitle("Analyze Competitor Video")
+            .setView(container)
+            .setPositiveButton("Analyze") { _, _ ->
+
+                val urlText =
+                    input.text.toString().trim()
+
+                runCompetitorAnalysis(urlText)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun runCompetitorAnalysis(urlText: String) {
+
+        if (urlText.isEmpty()) {
+
+            statusText.text =
+                "Paste a video URL first"
+
+            return
+        }
+
+        if (!isNetworkAvailable()) {
+
+            statusText.text =
+                "No internet connection"
+
+            return
+        }
+
+        val apiKey =
+            prefs.getString(
+                AboutActivity.KEY_API_KEY,
+                ""
+            ) ?: ""
+
+        if (apiKey.isEmpty()) {
+
+            statusText.text =
+                "Set your YouTube API key in Settings / About first"
+
+            return
+        }
+
+        val videoId =
+            trendingRepository.extractVideoId(urlText)
+
+        if (videoId == null) {
+
+            statusText.text =
+                "Could not find a video ID in that URL"
+
+            return
+        }
+
+        statusText.text =
+            "Analyzing competitor video..."
+
+        activityScope.launch {
+
+            try {
+
+                val details =
+                    withContext(Dispatchers.IO) {
+                        trendingRepository.fetchVideoDetails(
+                            apiKey = apiKey,
+                            videoId = videoId
+                        )
+                    }
+
+                val tagsText =
+                    if (details.tags.isEmpty())
+                        "No public tags found"
+                    else
+                        details.tags.take(15).joinToString(", ")
+
+                val descriptionPreview =
+                    details.description
+                        .lineSequence()
+                        .filter { it.isNotBlank() }
+                        .take(3)
+                        .joinToString("\n")
+                        .ifBlank { "No description" }
+
+                val message = """
+Channel: ${details.channelTitle}
+Views: ${details.viewCount}
+
+Title:
+${details.title}
+
+Tags:
+$tagsText
+
+Description (preview):
+$descriptionPreview
+""".trimIndent()
+
+                AlertDialog.Builder(this@MainActivity)
+                    .setTitle("Competitor Analysis")
+                    .setMessage(message)
+                    .setPositiveButton("Close", null)
+                    .show()
+
+                statusText.text =
+                    "Analysis complete"
+
+            } catch (e: Exception) {
+
+                statusText.text =
+                    "Analysis failed: ${e.message}"
+            }
+        }
+    }
+
+    // =========================================================
+    // A/B TITLE TESTER (fully offline heuristic scoring)
+    // =========================================================
+
+    private fun showAbTestDialog() {
+
+        val titleAInput =
+            EditText(this).apply {
+                hint = "Title A"
+            }
+
+        val titleBInput =
+            EditText(this).apply {
+                hint = "Title B"
+            }
+
+        val container =
+            LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL
+                setPadding(48, 24, 48, 0)
+                addView(titleAInput)
+                addView(titleBInput)
+            }
+
+        AlertDialog.Builder(this)
+            .setTitle("A/B Title Test")
+            .setView(container)
+            .setPositiveButton("Test") { _, _ ->
+
+                val titleA =
+                    titleAInput.text.toString().trim()
+
+                val titleB =
+                    titleBInput.text.toString().trim()
+
+                if (titleA.isEmpty() || titleB.isEmpty()) {
+
+                    statusText.text =
+                        "Enter both titles to test"
+
+                    return@setPositiveButton
+                }
+
+                val scoreA = titleScorer.score(titleA)
+                val scoreB = titleScorer.score(titleB)
+
+                val winner =
+                    when {
+                        scoreA.score > scoreB.score -> "Title A wins 🏆"
+                        scoreB.score > scoreA.score -> "Title B wins 🏆"
+                        else -> "It's a tie!"
+                    }
+
+                val message = """
+$winner
+
+Title A: ${scoreA.score}/100
+"$titleA"
+${scoreA.notes.joinToString("\n") { "• $it" }}
+
+Title B: ${scoreB.score}/100
+"$titleB"
+${scoreB.notes.joinToString("\n") { "• $it" }}
+""".trimIndent()
+
+                AlertDialog.Builder(this)
+                    .setTitle("Test Results")
+                    .setMessage(message)
+                    .setPositiveButton("Close", null)
+                    .show()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    // =========================================================
+    // BEST POSTING TIME (offline, based on selected Category)
+    // =========================================================
+
+    private fun showPostingTimeDialog() {
+
+        val category =
+            categorySpinner.selectedItem
+                ?.toString()
+                ?: "General"
+
+        val advice =
+            when (category) {
+
+                "Gaming" ->
+                    "Gaming audiences are most active 6 PM - 10 PM IST, especially Fri-Sun."
+
+                "Tech" ->
+                    "Tech audiences engage most 12 PM - 3 PM and 7 PM - 9 PM IST on weekdays."
+
+                "Vlog" ->
+                    "Vlogs perform well 11 AM - 1 PM (lunch scroll) and 8 PM - 10 PM IST daily."
+
+                "Comedy" ->
+                    "Comedy/Shorts spike 7 PM - 11 PM IST, and midday 1 PM - 2 PM on weekends."
+
+                "Anime" ->
+                    "Anime content does well late evening 8 PM - 12 AM IST, especially weekends."
+
+                else ->
+                    "General Shorts perform well 12 PM - 2 PM and 7 PM - 10 PM IST daily."
+            }
+
+        AlertDialog.Builder(this)
+            .setTitle("Best Posting Time — $category")
+            .setMessage(
+                "$advice\n\nThese are general offline best-practice guidelines, not live data."
+            )
+            .setPositiveButton("Got it", null)
+            .show()
+    }
+
     override fun onDestroy() {
 
         activityScope.cancel()
