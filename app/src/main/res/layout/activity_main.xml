@@ -51,7 +51,7 @@
             android:layout_marginTop="6dp"
             android:layout_marginBottom="22dp" />
 
-        <!-- CONTENT OPTIONS CARD -->
+        <!-- CONTENT OPTIONS CARD (Category + Tone) -->
 
         <LinearLayout
             android:id="@+id/optionsCard"
@@ -131,6 +131,23 @@
 
             </LinearLayout>
 
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Video Length"
+                android:textColor="@color/text_secondary"
+                android:textSize="11sp"
+                android:layout_marginTop="10dp" />
+
+            <Spinner
+                android:id="@+id/videoLengthSpinner"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:layout_marginTop="4dp"
+                android:background="@drawable/input_background"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp" />
+
         </LinearLayout>
 
         <!-- TOPIC CARD -->
@@ -207,6 +224,57 @@
 
         </LinearLayout>
 
+        <!-- COMPETITOR ANALYZER + A/B TITLE TEST -->
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="10dp">
+
+            <Button
+                android:id="@+id/competitorAnalyzeButton"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_weight="1"
+                android:text="Analyze Competitor"
+                android:textAllCaps="false"
+                android:textSize="12sp"
+                android:textColor="@color/text_primary"
+                android:background="@drawable/secondary_button"
+                android:minHeight="0dp" />
+
+            <Space
+                android:layout_width="10dp"
+                android:layout_height="1dp" />
+
+            <Button
+                android:id="@+id/abTestButton"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_weight="1"
+                android:text="A/B Title Test"
+                android:textAllCaps="false"
+                android:textSize="12sp"
+                android:textColor="@color/text_primary"
+                android:background="@drawable/secondary_button"
+                android:minHeight="0dp" />
+
+        </LinearLayout>
+
+        <!-- BEST POSTING TIME -->
+
+        <Button
+            android:id="@+id/postingTimeButton"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:layout_marginTop="10dp"
+            android:text="Best Posting Time"
+            android:textAllCaps="false"
+            android:textSize="13sp"
+            android:textColor="@color/text_primary"
+            android:background="@drawable/secondary_button"
+            android:minHeight="0dp" />
         <!-- GENERATE BUTTON -->
 
         <Button
