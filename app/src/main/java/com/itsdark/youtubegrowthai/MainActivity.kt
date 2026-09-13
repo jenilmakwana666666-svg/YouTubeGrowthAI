@@ -1244,42 +1244,15 @@ class MainActivity : Activity() {
                         )
                     }
 
-                val base =
+                val result =
                     withContext(Dispatchers.Default) {
-                        engine.generate(
+                        buildLiveOptimizedResult(
                             topic = topic,
+                            category = category,
                             tone = tone,
-                            category = category
+                            trending = trending
                         )
                     }
-
-                val liveTitles =
-                    trending.titles
-                        .mapIndexed { index, title ->
-                            "${index + 1}. $title"
-                        }
-                        .joinToString("\n")
-
-                val liveHashtags =
-                    trending.tags
-                        .map {
-                            "#" + it.replace(
-                                Regex("[^A-Za-z0-9]"),
-                                ""
-                            )
-                        }
-                        .filter { it.length > 1 }
-                        .distinct()
-                        .take(12)
-                        .joinToString(" ")
-
-                val result =
-                    base.copy(
-                        titles =
-                            liveTitles.ifBlank { base.titles },
-                        hashtags =
-                            liveHashtags.ifBlank { base.hashtags }
-                    )
 
                 displayResults(result)
 
@@ -1306,8 +1279,176 @@ class MainActivity : Activity() {
         }
     }
 
-    private fun isNetworkAvailable(): Boolean {
+    // Builds EVERY section (titles, description, hook, hashtags, keywords,
+    // thumbnail text, CTA, growth tips, alternative titles) from real
+    // live trending data — used only by the Live Trending Generate button.
+    private fun buildLiveOptimizedResult(
+        topic: String,
+        category: String,
+        tone: String,
+        trending: TrendingRepository.TrendingData
+    ): GrowthResult {
 
+        val topKeywords =
+            trending.keywords.take(5)
+
+        val hybridTitlePool =
+            listOf(
+                "$topic — ${topKeywords.getOrElse(0) { "Trending" }
+                    .replaceFirstChar { it.uppercase() }} Edition 🔥",
+                "Why Everyone's Talking About $topic Right Now 👀",
+                "$topic Just Went Viral — Here's Why ⚡"
+            )
+
+        val titleLines = mutableListOf<String>()
+
+        titleLines.addAll(trending.titles.take(7))
+
+        var hybridIndex = 0
+
+        while (
+            titleLines.size < 10 &&
+            hybridIndex < hybridTitlePool.size
+        ) {
+            titleLines.add(hybridTitlePool[hybridIndex])
+            hybridIndex++
+        }
+
+        val titles =
+            titleLines
+                .take(10)
+                .mapIndexed { index, title ->
+                    "${index + 1}. $title"
+                }
+                .joinToString("\n")
+
+        val altSource =
+            trending.titles
+                .drop(7)
+                .ifEmpty { hybridTitlePool }
+
+        val alternativeTitles =
+            altSource
+                .take(3)
+                .mapIndexed { index, title ->
+                    "${index + 1}. $title"
+                }
+                .joinToString("\n")
+                .ifBlank {
+                    "More live trending titles will appear as fresh videos are published."
+                }
+
+        val categoryTags =
+            when (category) {
+                "Gaming" -> listOf("#Gaming", "#Gameplay")
+                "Tech" -> listOf("#Tech", "#TechShorts")
+                "Vlog" -> listOf("#Vlog", "#DailyVlog")
+                "Comedy" -> listOf("#Comedy", "#Funny")
+                "Anime" -> listOf("#Anime", "#AnimeEdit")
+                else -> emptyList()
+            }
+
+        val hashtags =
+            (
+                listOf("#itsdark", "#itsdark444") +
+                    trending.tags.map {
+                        "#" + it.replace(
+                            Regex("[^A-Za-z0-9]"),
+                            ""
+                        )
+                    }.filter { it.length > 1 } +
+                    categoryTags +
+                    listOf("#Shorts", "#YouTubeShorts")
+                )
+                .distinct()
+                .take(12)
+                .joinToString(" ")
+
+        val keywordsText =
+            (listOf(topic) + trending.keywords)
+                .distinct()
+                .take(15)
+                .joinToString(", ")
+
+        val keywordLine =
+            topKeywords.joinToString(", ")
+                .ifBlank { topic }
+
+        val description = """
+🔥 $topic
+
+Trending right now with searches like $keywordLine — this covers exactly what viewers are looking for today.
+
+Watch till the end for the best part! 👀
+
+What's your take on this? Comment below 👇
+
+👍 Like this video
+💬 Comment your thoughts
+🔔 Subscribe for more trending Shorts
+
+$hashtags
+""".trimIndent()
+
+        val topTrendingTitle =
+            trending.titles.firstOrNull() ?: topic
+
+        val hook =
+            "Right now, videos like \"$topTrendingTitle\" are blowing up — here's the $topic take everyone's about to see 👀🔥"
+
+        val thumbWord1 =
+            topKeywords.getOrNull(0)
+                ?.uppercase()
+                ?: "TRENDING"
+
+        val thumbWord2 =
+            topKeywords.getOrNull(1)
+                ?.uppercase()
+                ?: "RIGHT NOW"
+
+        val thumbnailText = """
+$thumbWord1 🔥
+$thumbWord2 👀
+DON'T MISS THIS ⚡
+""".trimIndent()
+
+        val baseCta =
+            "Which moment was your favorite? 👀\nComment below and subscribe for more Shorts! 🔔"
+
+        val cta =
+            if (tone != "Default")
+                engine.applyTone(baseCta, tone)
+            else
+                baseCta
+
+        val tagsSample =
+            trending.tags
+                .take(3)
+                .joinToString(", ")
+                .ifBlank { "N/A" }
+
+        val growthTips = """
+1. Top trending title right now: "$topTrendingTitle" — study its hook and pacing.
+2. Common tags on trending videos: $tagsSample.
+3. Trending keywords to weave in: $keywordLine.
+4. Match the energy of top-performing Shorts in the first 2 seconds.
+5. Publish soon — trending topics fade fast, timing matters.
+""".trimIndent()
+
+        return GrowthResult(
+            titles = titles,
+            description = description,
+            hook = hook,
+            hashtags = hashtags,
+            keywords = keywordsText,
+            thumbnailText = thumbnailText,
+            cta = cta,
+            growthTips = growthTips,
+            alternativeTitles = alternativeTitles
+        )
+    }
+
+    private fun isNetworkAvailable(): Boolean {
         val connectivityManager =
             getSystemService(
                 CONNECTIVITY_SERVICE
