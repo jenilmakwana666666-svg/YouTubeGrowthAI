@@ -14,165 +14,168 @@ import android.widget.Toast
 
 class AboutActivity : Activity() {
 
-    companion object {
-        const val PREFS_NAME = "growth_ai_prefs"
-        const val KEY_API_KEY = "youtube_api_key"
-    }
+companion object {  
+    const val PREFS_NAME = "growth_ai_prefs"  
+    const val KEY_API_KEY = "youtube_api_key"  
+}  
 
-    private lateinit var prefs: SharedPreferences
+private lateinit var prefs: SharedPreferences  
 
-    override fun onCreate(
-        savedInstanceState: Bundle?
-    ) {
-        super.onCreate(savedInstanceState)
+override fun onCreate(  
+    savedInstanceState: Bundle?  
+) {  
+    super.onCreate(savedInstanceState)  
 
-        setContentView(
-            R.layout.activity_about
-        )
+    setContentView(  
+        R.layout.activity_about  
+    )  
 
-        prefs =
-            getSharedPreferences(
-                PREFS_NAME,
-                Context.MODE_PRIVATE
-            )
+    prefs =  
+        getSharedPreferences(  
+            PREFS_NAME,  
+            Context.MODE_PRIVATE  
+        )  
 
-        val appVersionText: TextView =
-            findViewById(R.id.appVersionText)
+    val appVersionText: TextView =  
+        findViewById(R.id.appVersionText)  
 
-        val versionName =
-            try {
-                packageManager
-                    .getPackageInfo(packageName, 0)
-                    .versionName
-            } catch (e: Exception) {
-                null
-            }
+    val versionName =  
+        try {  
+            packageManager  
+                .getPackageInfo(packageName, 0)  
+                .versionName  
+        } catch (e: Exception) {  
+            null  
+        }  
 
-        appVersionText.text =
-            if (versionName != null)
-                "Version $versionName"
-            else
-                ""
+    appVersionText.text =  
+        if (versionName != null)  
+            "Version $versionName"  
+        else  
+            ""  
 
-        val openChannelFromAboutButton: Button =
-            findViewById(R.id.openChannelFromAboutButton)
+    val openChannelFromAboutButton: Button =  
+        findViewById(R.id.openChannelFromAboutButton)  
 
-        val rateAppButton: Button =
-            findViewById(R.id.rateAppButton)
+    val rateAppButton: Button =  
+        findViewById(R.id.rateAppButton)  
 
-        val backFromAboutButton: Button =
-            findViewById(R.id.backFromAboutButton)
+    val backFromAboutButton: Button =  
+        findViewById(R.id.backFromAboutButton)  
 
-        val apiKeyInput: EditText =
-            findViewById(R.id.apiKeyInput)
+    val apiKeyInput: EditText =  
+        findViewById(R.id.apiKeyInput)  
 
-        val saveApiKeyButton: Button =
-            findViewById(R.id.saveApiKeyButton)
+    val saveApiKeyButton: Button =  
+        findViewById(R.id.saveApiKeyButton)  
 
-        apiKeyInput.setText(
-            prefs.getString(KEY_API_KEY, "")
-        )
+    apiKeyInput.setText(  
+        prefs.getString(KEY_API_KEY, "")  
+    )  
 
-        openChannelFromAboutButton.setOnClickListener {
-            openChannel()
-        }
+    openChannelFromAboutButton.setOnClickListener {  
+        openChannel()  
+    }  
 
-        rateAppButton.setOnClickListener {
-            openPlayStoreListing()
-        }
+    rateAppButton.setOnClickListener {  
+        openPlayStoreListing()  
+    }  
 
-        backFromAboutButton.setOnClickListener {
-            finish()
-        }
+    backFromAboutButton.setOnClickListener {  
+        finish()  
+    }  
 
-        saveApiKeyButton.setOnClickListener {
+    saveApiKeyButton.setOnClickListener {  
 
-            val key =
-                apiKeyInput.text
-                    .toString()
-                    .trim()
+        val key =  
+            apiKeyInput.text  
+                .toString()  
+                .trim()  
 
-            prefs.edit()
-                .putString(KEY_API_KEY, key)
-                .apply()
+        prefs.edit()  
+            .putString(KEY_API_KEY, key)  
+            .apply()  
 
-            Toast.makeText(
-                this,
-                if (key.isEmpty())
-                    "API key cleared"
-                else
-                    "API key saved",
-                Toast.LENGTH_SHORT
-            ).show()
-        }
-    }
+        Toast.makeText(  
+            this,  
+            if (key.isEmpty())  
+                "API key cleared"  
+            else  
+                "API key saved",  
+            Toast.LENGTH_SHORT  
+        ).show()  
+    }  
+}  
 
-    private fun openChannel() {
+private fun openChannel() {  
 
-        val channelUrl =
-            "https://www.youtube.com/@itsdark_444"
+    val channelUrl =  
+        "https://www.youtube.com/@itsdark_444"  
 
-        try {
+    try {  
 
-            val youtubeAppIntent =
-                Intent(
-                    Intent.ACTION_VIEW,
-                    Uri.parse(channelUrl)
-                )
+        val youtubeAppIntent =  
+            Intent(  
+                Intent.ACTION_VIEW,  
+                Uri.parse(channelUrl)  
+            )  
 
-            youtubeAppIntent.setPackage(
-                "com.google.android.youtube"
-            )
+        youtubeAppIntent.setPackage(  
+            "com.google.android.youtube"  
+        )  
 
-            startActivity(youtubeAppIntent)
+        startActivity(youtubeAppIntent)  
 
-        } catch (e: ActivityNotFoundException) {
+    } catch (e: ActivityNotFoundException) {  
 
-            try {
+        try {  
 
-                startActivity(
-                    Intent(
-                        Intent.ACTION_VIEW,
-                        Uri.parse(channelUrl)
-                    )
-                )
+            startActivity(  
+                Intent(  
+                    Intent.ACTION_VIEW,  
+                    Uri.parse(channelUrl)  
+                )  
+            )  
 
-            } catch (e2: ActivityNotFoundException) {
-                // No app available to open the link; silently ignore.
-            }
-        }
-    }
+        } catch (e2: ActivityNotFoundException) {  
+            // No app available to open the link; silently ignore.  
+        }  
+    }  
+}  
 
-    private fun openPlayStoreListing() {
+private fun openPlayStoreListing() {  
 
-        val marketUri =
-            Uri.parse("market://details?id=$packageName")
+    val marketUri =  
+        Uri.parse("market://details?id=$packageName")  
 
-        try {
+    try {  
 
-            startActivity(
-                Intent(
-                    Intent.ACTION_VIEW,
-                    marketUri
-                )
-            )
+        startActivity(  
+            Intent(  
+                Intent.ACTION_VIEW,  
+                marketUri  
+            )  
+        )  
 
-        } catch (e: ActivityNotFoundException) {
+    } catch (e: ActivityNotFoundException) {  
 
-            try {
+        try {  
 
-                startActivity(
-                    Intent(
-                        Intent.ACTION_VIEW,
-                        Uri.parse(
-                            "https://play.google.com/store/apps/details?id=$packageName"
-                        )
-                    )
-                )
+            startActivity(  
+                Intent(  
+                    Intent.ACTION_VIEW,  
+                    Uri.parse(  
+                        "https://play.google.com/store/apps/details?id=$packageName"  
+                    )  
+                )  
+            )  
 
-            } catch (e2: ActivityNotFoundException) {
-                // No browser or Play Store available; silently ignore.
-            }
-        }
-    }
+        } catch (e2: ActivityNotFoundException) {  
+            // No browser or Play Store available; silently ignore.  
+        }  
+    }  
 }
+
+}
+
+Kya ye code thik he
