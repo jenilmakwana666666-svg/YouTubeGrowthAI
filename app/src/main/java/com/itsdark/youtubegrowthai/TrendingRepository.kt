@@ -33,14 +33,22 @@ class TrendingRepository {
     fun fetchTrending(
         apiKey: String,
         topic: String,
-        regionCode: String = "IN"
+        regionCode: String = "IN",
+        days: Int = 7,
+        videoCategoryId: String? = null
     ): TrendingData {
 
         val encodedQuery =
             URLEncoder.encode(topic, "UTF-8")
 
         val publishedAfter =
-            isoDateDaysAgo(7)
+            isoDateDaysAgo(days)
+
+        val categoryParam =
+            if (videoCategoryId != null)
+                "&videoCategoryId=$videoCategoryId"
+            else
+                ""
 
         val searchUrl =
             "https://www.googleapis.com/youtube/v3/search" +
@@ -51,6 +59,7 @@ class TrendingRepository {
                 "&maxResults=15" +
                 "&regionCode=$regionCode" +
                 "&publishedAfter=$publishedAfter" +
+                categoryParam +
                 "&key=$apiKey"
 
         val searchJson =
