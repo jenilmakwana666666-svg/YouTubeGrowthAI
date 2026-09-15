@@ -14,168 +14,188 @@ import android.widget.Toast
 
 class AboutActivity : Activity() {
 
-companion object {  
-    const val PREFS_NAME = "growth_ai_prefs"  
-    const val KEY_API_KEY = "youtube_api_key"  
-}  
+    companion object {
+        const val PREFS_NAME = "growth_ai_prefs"
+        const val KEY_API_KEY = "youtube_api_key"
+        const val KEY_QUOTA_USED = "api_quota_used"
+        const val KEY_QUOTA_DATE = "api_quota_date"
+    }
 
-private lateinit var prefs: SharedPreferences  
+    private lateinit var prefs: SharedPreferences
 
-override fun onCreate(  
-    savedInstanceState: Bundle?  
-) {  
-    super.onCreate(savedInstanceState)  
+    override fun onCreate(
+        savedInstanceState: Bundle?
+    ) {
+        super.onCreate(savedInstanceState)
 
-    setContentView(  
-        R.layout.activity_about  
-    )  
+        setContentView(
+            R.layout.activity_about
+        )
 
-    prefs =  
-        getSharedPreferences(  
-            PREFS_NAME,  
-            Context.MODE_PRIVATE  
-        )  
+        prefs =
+            getSharedPreferences(
+                PREFS_NAME,
+                Context.MODE_PRIVATE
+            )
 
-    val appVersionText: TextView =  
-        findViewById(R.id.appVersionText)  
+        val appVersionText: TextView =
+            findViewById(R.id.appVersionText)
 
-    val versionName =  
-        try {  
-            packageManager  
-                .getPackageInfo(packageName, 0)  
-                .versionName  
-        } catch (e: Exception) {  
-            null  
-        }  
+        val versionName =
+            try {
+                packageManager
+                    .getPackageInfo(packageName, 0)
+                    .versionName
+            } catch (e: Exception) {
+                null
+            }
 
-    appVersionText.text =  
-        if (versionName != null)  
-            "Version $versionName"  
-        else  
-            ""  
+        appVersionText.text =
+            if (versionName != null)
+                "Version $versionName"
+            else
+                ""
 
-    val openChannelFromAboutButton: Button =  
-        findViewById(R.id.openChannelFromAboutButton)  
+        val openChannelFromAboutButton: Button =
+            findViewById(R.id.openChannelFromAboutButton)
 
-    val rateAppButton: Button =  
-        findViewById(R.id.rateAppButton)  
+        val rateAppButton: Button =
+            findViewById(R.id.rateAppButton)
 
-    val backFromAboutButton: Button =  
-        findViewById(R.id.backFromAboutButton)  
+        val backFromAboutButton: Button =
+            findViewById(R.id.backFromAboutButton)
 
-    val apiKeyInput: EditText =  
-        findViewById(R.id.apiKeyInput)  
+        val apiKeyInput: EditText =
+            findViewById(R.id.apiKeyInput)
 
-    val saveApiKeyButton: Button =  
-        findViewById(R.id.saveApiKeyButton)  
+        val saveApiKeyButton: Button =
+            findViewById(R.id.saveApiKeyButton)
 
-    apiKeyInput.setText(  
-        prefs.getString(KEY_API_KEY, "")  
-    )  
+        apiKeyInput.setText(
+            prefs.getString(KEY_API_KEY, "")
+        )
 
-    openChannelFromAboutButton.setOnClickListener {  
-        openChannel()  
-    }  
+        val apiUsageText: TextView =
+            findViewById(R.id.apiUsageText)
 
-    rateAppButton.setOnClickListener {  
-        openPlayStoreListing()  
-    }  
+        val today =
+            java.text.SimpleDateFormat(
+                "yyyy-MM-dd",
+                java.util.Locale.US
+            ).format(java.util.Date())
 
-    backFromAboutButton.setOnClickListener {  
-        finish()  
-    }  
+        val storedDate =
+            prefs.getString(KEY_QUOTA_DATE, "")
 
-    saveApiKeyButton.setOnClickListener {  
+        val usedUnits =
+            if (storedDate == today)
+                prefs.getInt(KEY_QUOTA_USED, 0)
+            else
+                0
 
-        val key =  
-            apiKeyInput.text  
-                .toString()  
-                .trim()  
+        apiUsageText.text =
+            "API usage today: $usedUnits / 10,000 units (free daily quota)"
 
-        prefs.edit()  
-            .putString(KEY_API_KEY, key)  
-            .apply()  
+        openChannelFromAboutButton.setOnClickListener {
+            openChannel()
+        }
 
-        Toast.makeText(  
-            this,  
-            if (key.isEmpty())  
-                "API key cleared"  
-            else  
-                "API key saved",  
-            Toast.LENGTH_SHORT  
-        ).show()  
-    }  
-}  
+        rateAppButton.setOnClickListener {
+            openPlayStoreListing()
+        }
 
-private fun openChannel() {  
+        backFromAboutButton.setOnClickListener {
+            finish()
+        }
 
-    val channelUrl =  
-        "https://www.youtube.com/@itsdark_444"  
+        saveApiKeyButton.setOnClickListener {
 
-    try {  
+            val key =
+                apiKeyInput.text
+                    .toString()
+                    .trim()
 
-        val youtubeAppIntent =  
-            Intent(  
-                Intent.ACTION_VIEW,  
-                Uri.parse(channelUrl)  
-            )  
+            prefs.edit()
+                .putString(KEY_API_KEY, key)
+                .apply()
 
-        youtubeAppIntent.setPackage(  
-            "com.google.android.youtube"  
-        )  
+            Toast.makeText(
+                this,
+                if (key.isEmpty())
+                    "API key cleared"
+                else
+                    "API key saved",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
 
-        startActivity(youtubeAppIntent)  
+    private fun openChannel() {
 
-    } catch (e: ActivityNotFoundException) {  
+        val channelUrl =
+            "https://www.youtube.com/@itsdark_444"
 
-        try {  
+        try {
 
-            startActivity(  
-                Intent(  
-                    Intent.ACTION_VIEW,  
-                    Uri.parse(channelUrl)  
-                )  
-            )  
+            val youtubeAppIntent =
+                Intent(
+                    Intent.ACTION_VIEW,
+                    Uri.parse(channelUrl)
+                )
 
-        } catch (e2: ActivityNotFoundException) {  
-            // No app available to open the link; silently ignore.  
-        }  
-    }  
-}  
+            youtubeAppIntent.setPackage(
+                "com.google.android.youtube"
+            )
 
-private fun openPlayStoreListing() {  
+            startActivity(youtubeAppIntent)
 
-    val marketUri =  
-        Uri.parse("market://details?id=$packageName")  
+        } catch (e: ActivityNotFoundException) {
 
-    try {  
+            try {
 
-        startActivity(  
-            Intent(  
-                Intent.ACTION_VIEW,  
-                marketUri  
-            )  
-        )  
+                startActivity(
+                    Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse(channelUrl)
+                    )
+                )
 
-    } catch (e: ActivityNotFoundException) {  
+            } catch (e2: ActivityNotFoundException) {
+                // No app available to open the link; silently ignore.
+            }
+        }
+    }
 
-        try {  
+    private fun openPlayStoreListing() {
 
-            startActivity(  
-                Intent(  
-                    Intent.ACTION_VIEW,  
-                    Uri.parse(  
-                        "https://play.google.com/store/apps/details?id=$packageName"  
-                    )  
-                )  
-            )  
+        val marketUri =
+            Uri.parse("market://details?id=$packageName")
 
-        } catch (e2: ActivityNotFoundException) {  
-            // No browser or Play Store available; silently ignore.  
-        }  
-    }  
+        try {
+
+            startActivity(
+                Intent(
+                    Intent.ACTION_VIEW,
+                    marketUri
+                )
+            )
+
+        } catch (e: ActivityNotFoundException) {
+
+            try {
+
+                startActivity(
+                    Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse(
+                            "https://play.google.com/store/apps/details?id=$packageName"
+                        )
+                    )
+                )
+
+            } catch (e2: ActivityNotFoundException) {
+                // No browser or Play Store available; silently ignore.
+            }
+        }
+    }
 }
-
-}
-
-Kya ye code thik he
